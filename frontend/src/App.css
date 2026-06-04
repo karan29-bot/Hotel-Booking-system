@@ -62,67 +62,148 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: min(100%, 960px);
+  width: min(100%, 1100px);
   margin-top: auto;
-  padding: clamp(14px, 2vw, 18px) clamp(20px, 3vw, 32px);
-  background: rgba(255, 255, 255, 0.92);
+  padding: 0;
+  height: 72px;
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 9999px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  backdrop-filter: blur(8px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
   box-sizing: border-box;
+  gap: 0;
 }
 
+/* Base field styling - NOW HORIZONTAL ROW */
 .hero-search-field {
-  flex: 1;
   display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 8px;
   min-width: 0;
-  padding: 4px 8px;
+  padding: 0 20px;
+  height: 100%;
 }
 
+/* Location field: 22% width */
+.hero-search-field--location {
+  flex: 0 0 auto;
+  flex-basis: 22%;
+  padding: 0 20px 0 24px;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Check In field: 22% width */
+.hero-search-field--checkin {
+  flex: 0 0 auto;
+  flex-basis: 22%;
+  padding: 0 20px;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Check Out field: 22% width */
+.hero-search-field--checkout {
+  flex: 0 0 auto;
+  flex-basis: 22%;
+  padding: 0 20px;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Guests field: 18% width */
+.hero-search-field--guests {
+  flex: 0 0 auto;
+  flex-basis: 18%;
+  padding: 0 20px;
+}
+
+/* Date-specific styling - KEPT HORIZONTAL */
 .hero-search-field--date {
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 4px 8px;
+  flex-direction: row;
+  gap: 8px;
 }
 
 .hero-search-label {
   font-family: var(--sans);
-  font-size: clamp(0.8rem, 1.6vw, 0.95rem);
-  font-weight: 500;
-  color: #3d3d3d;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
   white-space: nowrap;
+  margin: 0;
+  flex-shrink: 0;
 }
 
+/* Location dropdown wrapper with custom arrow */
+.hero-search-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.hero-search-dropdown-arrow {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #081224;
+  pointer-events: none;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+/* Location select dropdown - premium styling */
+.hero-search-select {
+  flex: 1;
+  min-width: 0;
+  padding: 0 20px 0 0;
+  border: none;
+  background: transparent;
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #081224;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.hero-search-select:focus {
+  outline: none;
+  color: #1a0033;
+}
+
+.hero-search-select:hover {
+  color: #1a0033;
+}
+
+/* Date control - improved spacing */
 .hero-search-date-control {
   display: flex;
   align-items: center;
   gap: 4px;
-  min-width: 0;
   flex: 1;
-  max-width: 100%;
+  min-width: 0;
 }
 
+/* Date input - prevent compression */
 .hero-search-date {
   flex: 1;
   min-width: 0;
-  max-width: 9.5rem;
-  padding: 2px 0;
+  max-width: 100%;
+  padding: 0;
   border: none;
   background: transparent;
   font-family: var(--sans);
-  font-size: clamp(0.75rem, 1.4vw, 0.9rem);
+  font-size: 0.95rem;
   font-weight: 500;
-  color: #3d3d3d;
+  color: #081224;
   cursor: pointer;
-}
-
-.hero-search-date:focus {
-  outline: 2px solid var(--accent-border);
-  outline-offset: 2px;
-  border-radius: 4px;
 }
 
 .hero-search-date::-webkit-calendar-picker-indicator {
@@ -131,94 +212,249 @@
   pointer-events: none;
 }
 
+.hero-search-date:focus {
+  outline: none;
+  color: #1a0033;
+}
+
+/* Calendar button - compact */
 .hero-search-calendar-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  padding: 4px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
   border: none;
   background: transparent;
   cursor: pointer;
-  color: #5c5c5c;
-  border-radius: 4px;
+  color: #666;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 }
 
 .hero-search-calendar-btn:hover {
   background: rgba(0, 0, 0, 0.06);
+  color: #081224;
 }
 
 .hero-search-calendar-btn:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline: none;
 }
 
+/* Divider - removed (using borders on fields instead) */
 .hero-search-divider {
-  flex-shrink: 0;
-  width: 1px;
-  height: 28px;
-  background: rgba(0, 0, 0, 0.12);
+  display: none;
 }
 
 .hero-calendar-icon {
   flex-shrink: 0;
-  color: #5c5c5c;
+  color: inherit;
+}
+
+/* Guest counter - compact horizontal layout */
+.hero-guest-counter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 1;
+}
+
+/* Guest counter buttons - smaller */
+.hero-guest-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #ccc;
+  background: #ffffff;
+  color: #081224;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.hero-guest-btn:hover:not(:disabled) {
+  background: #081224;
+  color: #ffffff;
+  border-color: #081224;
+}
+
+.hero-guest-btn:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
+.hero-guest-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Guest count display */
+.hero-guest-count {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #081224;
+  white-space: nowrap;
+  min-width: 60px;
+  text-align: center;
+}
+
+/* Premium Search Hotels button */
+.hero-search-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  height: 48px;
+  padding: 0 32px;
+  margin: 0 8px 0 0;
+  background: #ff6b35;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+  white-space: nowrap;
+}
+
+.hero-search-btn:hover {
+  background: #ff5a24;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+}
+
+.hero-search-btn:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 4px rgba(255, 107, 53, 0.2);
+}
+
+.hero-search-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 @media (max-width: 768px) {
   .hero {
     min-height: clamp(480px, 70vh, 640px);
-    padding-bottom: 24px;
+    padding-bottom: 20px;
   }
 
   .hero-heading {
     font-size: clamp(2rem, 9vw, 2.75rem);
   }
 
+  /* Mobile: Keep single row but make it scrollable */
   .hero-search {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    border-radius: 24px;
-    padding: 16px 20px;
+    height: auto;
+    min-height: 64px;
+    padding: 8px;
+    gap: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 
+  /* Mobile: Adjust field proportions */
   .hero-search-field {
-    justify-content: space-between;
-    padding: 8px 4px;
+    padding: 8px 12px;
+    min-width: auto;
   }
 
-  .hero-search-field--date {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px;
+  .hero-search-field--location {
+    flex-basis: 28%;
+    padding: 8px 12px 8px 16px;
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
   }
 
-  .hero-search-date-control {
-    width: 100%;
+  .hero-search-field--checkin {
+    flex-basis: 24%;
+    padding: 8px 12px;
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .hero-search-field--checkout {
+    flex-basis: 24%;
+    padding: 8px 12px;
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .hero-search-field--guests {
+    flex-basis: 20%;
+    padding: 8px 12px;
+    border-right: none;
+  }
+
+  .hero-search-label {
+    font-size: 0.65rem;
+  }
+
+  .hero-search-select {
+    font-size: 0.85rem;
   }
 
   .hero-search-date {
-    max-width: none;
-    width: 100%;
-    min-height: 2.25rem;
-    padding: 4px 8px;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 8px;
+    font-size: 0.85rem;
   }
 
-  .hero-search-divider {
-    display: none;
+  .hero-search-calendar-btn {
+    width: 28px;
+    height: 28px;
+  }
+
+  /* Mobile: Compact guest buttons */
+  .hero-guest-counter {
+    gap: 4px;
+  }
+
+  .hero-guest-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 0.8rem;
+    border: 1px solid #ccc;
+  }
+
+  .hero-guest-count {
+    font-size: 0.75rem;
+    min-width: 50px;
+  }
+
+  /* Mobile: Compact search button */
+  .hero-search-btn {
+    height: 44px;
+    padding: 0 20px;
+    margin: 8px;
+    font-size: 0.85rem;
+    flex-shrink: 0;
   }
 }
 
 @media (max-width: 480px) {
   .hero-search-label {
-    white-space: normal;
+    font-size: 0.6rem;
+  }
+
+  .hero-search-select {
+    font-size: 0.8rem;
   }
 
   .hero-search-date {
-    font-size: 1rem;
+    font-size: 0.8rem;
+  }
+
+  .hero-search-btn {
+    height: 40px;
+    padding: 0 16px;
+    font-size: 0.8rem;
   }
 }
 
@@ -341,6 +577,45 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+.navbar-auth {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.navbar-auth-btn {
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  font-weight: 500;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.navbar-auth-btn--login {
+  color: black;
+  border: 1px solid rgb(8, 0, 0);
+  border-radius: 20px;
+
+}
+
+.navbar-auth-btn--login:hover {
+  background:transparent;
+}
+
+.navbar-auth-btn--signup {
+  color:#081224;
+  background:  white;
+}
+
+.navbar-auth-btn--signup:hover {
+  opacity: 0.9;
 }
 
 @media (max-width: 768px) {
