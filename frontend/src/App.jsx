@@ -35,6 +35,8 @@ function App() {
   const [editingIndex, setEditingIndex] = useState(null);
   const [activeNav, setActiveNav] = useState("booking");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [location, setLocation] = useState("Bangalore");  // NEW: Selected location state
+  const [guests, setGuests] = useState(1);                // NEW: Guest count state
   const checkInRef = useRef(null);
   const checkOutRef = useRef(null);
 
@@ -54,6 +56,27 @@ function App() {
     setActiveNav(navKey);
     setMenuOpen(false);
     document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Helper function to increment guests (no upper limit)
+  const handleGuestIncrement = () => {
+    setGuests((prevGuests) => prevGuests + 1);
+  };
+
+  // Helper function to decrement guests (minimum 1)
+  const handleGuestDecrement = () => {
+    setGuests((prevGuests) => (prevGuests > 1 ? prevGuests - 1 : 1));
+  };
+
+  // Handle search button click - triggers hotel search
+  const handleSearchHotels = () => {
+    if (!location || !checkIn || !checkOut) {
+      alert("Please fill in all fields: Location, Check-in, and Check-out dates");
+      return;
+    }
+    console.log("Search initiated:", { location, checkIn, checkOut, guests });
+    // Navigate to bookings section after validation
+    scrollToSection("bookings-list", "bookings");
   };
 
     useEffect(() => {
@@ -199,6 +222,15 @@ return (
             </button>
           </li>
         </ul>
+
+        <div className="navbar-auth">
+          <button type="button" className="navbar-auth-btn navbar-auth-btn--login">
+            Login
+          </button>
+          <button type="button" className="navbar-auth-btn navbar-auth-btn--signup">
+            Sign Up
+          </button>
+        </div>
       </nav>
 
       <section className="hero" aria-label="Welcome">
@@ -210,11 +242,35 @@ return (
           </h1>
 
           <div className="hero-search" role="search" aria-label="Hotel search">
-            <div className="hero-search-field">
-              <span className="hero-search-label">Location</span>
+            {/* Location Section: 25% */}
+            <div className="hero-search-field hero-search-field--location">
+              <label className="hero-search-label" htmlFor="location-select">
+                Location
+              </label>
+              <div className="hero-search-select-wrapper">
+                <select
+                  id="location-select"
+                  className="hero-search-select"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  aria-label="Select location"
+                >
+                  <option value="Bangalore">Bangalore</option>
+                  <option value="Goa">Goa</option>
+                  <option value="Mumbai">Mumbai</option>
+                  <option value="Delhi">Delhi</option>
+                  <option value="Chennai">Chennai</option>
+                </select>
+                <svg className="hero-search-dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
             </div>
+
             <div className="hero-search-divider" aria-hidden="true" />
-            <div className="hero-search-field hero-search-field--date">
+
+            {/* Check In Section: 30% */}
+            <div className="hero-search-field hero-search-field--date hero-search-field--checkin">
               <label className="hero-search-label" htmlFor="hero-check-in">
                 Check in
               </label>
@@ -239,8 +295,11 @@ return (
                 </button>
               </div>
             </div>
+
             <div className="hero-search-divider" aria-hidden="true" />
-            <div className="hero-search-field hero-search-field--date">
+
+            {/* Check Out Section: 30% */}
+            <div className="hero-search-field hero-search-field--date hero-search-field--checkout">
               <label className="hero-search-label" htmlFor="hero-check-out">
                 Check out
               </label>
@@ -265,10 +324,45 @@ return (
                 </button>
               </div>
             </div>
+
             <div className="hero-search-divider" aria-hidden="true" />
-            <div className="hero-search-field">
-              <span className="hero-search-label">Guests</span>
+
+            {/* Guests Section: 15% */}
+            <div className="hero-search-field hero-search-field--guests">
+              <label className="hero-search-label">Guests</label>
+              <div className="hero-guest-counter">
+                <button
+                  type="button"
+                  className="hero-guest-btn"
+                  onClick={handleGuestDecrement}
+                  aria-label="Decrease guest count"
+                  disabled={guests === 1}
+                >
+                  −
+                </button>
+                <span className="hero-guest-count">
+                  {guests} {guests === 1 ? "Guest" : "Guests"}
+                </span>
+                <button
+                  type="button"
+                  className="hero-guest-btn"
+                  onClick={handleGuestIncrement}
+                  aria-label="Increase guest count"
+                >
+                  +
+                </button>
+              </div>
             </div>
+
+            {/* Search Button */}
+            <button
+              type="button"
+              className="hero-search-btn"
+              onClick={handleSearchHotels}
+              aria-label="Search hotels"
+            >
+              Search Hotels
+            </button>
           </div>
         </div>
       </section>

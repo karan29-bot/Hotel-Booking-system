@@ -6,21 +6,134 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: var(--shadow);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  /* Smooth transition for transform and shadow on hover */
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+              box-shadow 0.3s ease;
+  /* GPU acceleration for smoother animations */
+  transform: translateZ(0);
 }
 
+/* Premium hover: slightly lift card without scaling distortion */
 .hotel-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  /* translateY(-8px) lifts the card 8px upward for depth */
+  transform: translateY(-8px);
+  /* Enhanced shadow creates floating effect on hover */
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
+}
+
+/* Container for image - sets up absolute positioning context */
+.hotel-card__image-container {
+  position: relative;
+  /* Maintains 4:3 aspect ratio for responsive images */
+  aspect-ratio: 4 / 3;
+  /* Clips children to container bounds */
+  overflow: hidden;
+  border-radius: 12px 12px 0 0;
 }
 
 .hotel-card__image {
+  /* Full dimensions to fill container */
   width: 100%;
-  aspect-ratio: 4 / 3;
+  height: 100%;
+  /* Cover scales image to fill without distortion */
   background-size: cover;
+  /* Center positions image within container */
   background-position: center;
+  /* Prevents image tiling */
   background-repeat: no-repeat;
+  /* Fallback color while loading */
   background-color: var(--code-bg);
+  /* Smooth filter transition - no blur needed on image itself */
+  transition: filter 0.3s ease;
+}
+
+/* Dark gradient overlay - rises from bottom on hover */
+.hotel-card__overlay {
+  /* Absolute positioning covers entire image area */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* Linear gradient: transparent at top → dark navy at bottom */
+  /* This creates a natural fade effect focusing attention on button */
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.2) 40%,
+    rgba(8, 6, 13, 0.8) 100%
+  );
+  /* Sits below button */
+  z-index: 1;
+  /* Smooth opacity transition for fade in/out */
+  transition: opacity 0.4s ease;
+  /* Hidden by default */
+  opacity: 0;
+}
+
+/* Show gradient overlay on card hover */
+.hotel-card:hover .hotel-card__overlay {
+  /* Full opacity reveals the gradient */
+  opacity: 1;
+}
+
+/* Premium "Book Now" button - animates from bottom to top */
+.hotel-card__book-btn {
+  /* Absolute positioning at bottom of image */
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  /* Sits above overlay */
+  z-index: 2;
+  /* Premium button styling */
+  padding: 12px 32px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: var(--sans);
+  /* Warm orange color for premium feel - complements dark theme */
+  background: #ff6b35;
+  /* White text for contrast on orange background */
+  color: #ffffff;
+  /* No border for clean look */
+  border: none;
+  border-radius: 8px;
+  /* Pointer feedback for interactivity */
+  cursor: pointer;
+  /* Smooth all transitions with premium easing */
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* Initial state: button hidden below bottom edge */
+  /* translate(-50%, 100%) moves button down 100% of its height */
+  transform: translate(-50%, 100%);
+  /* Initially invisible */
+  opacity: 0;
+  /* Depth shadow for button elevation */
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  /* Prevent text selection on double-click */
+  user-select: none;
+}
+
+/* Button animates up on card hover */
+.hotel-card:hover .hotel-card__book-btn {
+  /* Fade in to full opacity */
+  opacity: 1;
+  /* translate(-50%, -20px) moves button up from bottom with 20px breathing room */
+  transform: translate(-50%, -20px);
+}
+
+/* Extra polish: button interaction on direct hover */
+.hotel-card__book-btn:hover {
+  /* Slight scale increase for interactive feedback */
+  transform: translate(-50%, -20px) scale(1.05);
+  /* Darker orange on hover */
+  background: #ff5a24;
+  /* Enhanced shadow on interaction */
+  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
+}
+
+/* Button press feedback */
+.hotel-card__book-btn:active {
+  /* Scale down slightly for tactile feedback */
+  transform: translate(-50%, -20px) scale(0.98);
 }
 
 .hotel-card__body {
