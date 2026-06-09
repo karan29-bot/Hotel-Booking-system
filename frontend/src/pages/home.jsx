@@ -25,6 +25,7 @@ function CalendarIcon() {
     </svg>
   );
 }
+import {Link} from "react-router-dom";
 
 function Home() {
   const [customerName, setCustomerName] = useState("");
@@ -224,12 +225,12 @@ return (
         </ul>
 
         <div className="navbar-auth">
-          <button type="button" className="navbar-auth-btn navbar-auth-btn--login">
+          <Link to="/login" className="navbar-auth-btn navbar-auth-btn--login">
             Login
-          </button>
-          <button type="button" className="navbar-auth-btn navbar-auth-btn--signup">
+          </Link>
+          <Link to="/signup" className="navbar-auth-btn navbar-auth-btn--signup">
             Sign Up
-          </button>
+          </Link>
         </div>
       </nav>
 
