@@ -118,7 +118,7 @@
 .hero-search-field--guests {
   flex: 0 0 auto;
   flex-basis: 18%;
-  padding: 0 20px;
+  padding: 0 28px 0 20px;
 }
 
 /* Date-specific styling - KEPT HORIZONTAL */
@@ -319,7 +319,7 @@
   flex-shrink: 0;
   height: 48px;
   padding: 0 32px;
-  margin: 0 8px 0 0;
+  margin: 0 8px 0 16px;
   background: #ff6b35;
   color: #ffffff;
   border: none;
@@ -397,7 +397,7 @@
 
   .hero-search-field--guests {
     flex-basis: 20%;
-    padding: 8px 12px;
+    padding: 8px 16px 8px 12px;
     border-right: none;
   }
 
@@ -439,7 +439,7 @@
   .hero-search-btn {
     height: 44px;
     padding: 0 20px;
-    margin: 8px;
+    margin: 8px 8px 8px 12px;
     font-size: 0.85rem;
     flex-shrink: 0;
   }

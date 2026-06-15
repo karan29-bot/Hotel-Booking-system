@@ -1,0 +1,225 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.login-page {
+  width: 100%;
+  min-height: 100vh;
+  min-width: 100%;
+  box-sizing: border-box;
+
+  background: url("../assets/lake-forest.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0px;
+}
+
+.login-page .glass-card {
+  width: 100%;
+  max-width: 1100px;
+  min-height: 650px;
+
+  display: flex;
+
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  background: rgba(20, 30, 20, 0.35);
+
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 20px;
+
+  overflow: hidden;
+}
+
+.login-page .left-section {
+  width: 50%;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  padding: 80px;
+
+  color: #ffffff;
+}
+
+.login-page .left-section h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: left;
+  line-height: 1.15;
+  margin-bottom: 48px;
+}
+
+.login-page .left-section h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-align: left;
+  line-height: 1.2;
+}
+
+.login-page .divider {
+  width: 1px;
+  background: rgba(248, 248, 248, 0.3);
+}
+
+.login-page .right-section {
+  width: 50%;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  gap: 25px;
+
+  padding: 80px;
+}
+
+.login-page .right-section input {
+  padding: 18px;
+
+  border-radius: 50px;
+
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
+  background: rgba(255, 255, 255, 0.1);
+
+  color: rgb(255, 255, 255);
+
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.login-page .right-section input::placeholder {
+  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 0.08em;
+}
+
+.login-page .forgot-password {
+  color: white;
+  text-align: right;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.login-page .login-btn {
+  width: 160px;
+  display: block;
+  margin: 4px auto 0;
+
+  padding: 15px;
+
+  border: none;
+  border-radius: 50px;
+
+  background: rgba(130, 130, 100, 0.45);
+
+  color: white;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+
+  cursor: pointer;
+
+  transition: 0.3s;
+}
+
+.login-page .login-btn:hover {
+  background: rgba(150, 150, 110, 0.6);
+}
+
+.login-page .social-login {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+
+  color: white;
+}
+
+.login-page .social-btn {
+  width: 42px;
+  height: 42px;
+
+  border-radius: 50%;
+  border: none;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-page .social-btn.google-btn {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.login-page .social-btn.apple-btn {
+  background: rgba(30, 30, 30, 0.7);
+}
+
+.login-page .signup-link {
+  margin-top: 40px;
+
+  text-align: center;
+}
+
+.login-page .signup-link p,
+.login-page .signup-link a {
+  color: #f4d03f;
+  font-weight: 700;
+  text-align: center;
+}
+
+.login-page .signup-link a {
+  text-decoration: none;
+}
+
+.login-page .signup-link a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .login-page .glass-card {
+    flex-direction: column;
+  }
+
+  .login-page .divider {
+    display: none;
+  }
+
+  .login-page .left-section,
+  .login-page .right-section {
+    width: 100%;
+    padding: 40px 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-page {
+    padding: 16px;
+  }
+
+  .login-page .left-section,
+  .login-page .right-section {
+    padding: 32px 24px;
+  }
+
+  .login-page .left-section h1 {
+    font-size: 1.6rem;
+  }
+
+  .login-page .left-section h2 {
+    font-size: 1.3rem;
+  }
+}
