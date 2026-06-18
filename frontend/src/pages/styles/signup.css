@@ -32,7 +32,7 @@
   -webkit-backdrop-filter: blur(28px);
   background: rgba(20, 30, 20, 0.35);
 
-  border: 1.5px solid #4fc3f7;
+  border: 1.5px;
   border-radius: 20px;
 
   overflow: hidden;

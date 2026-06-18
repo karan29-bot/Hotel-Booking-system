@@ -68,7 +68,7 @@ const updatedBooking = await pool.query(
   [customerName, hotelName, checkIn, checkOut, id]
 
 );
-    res.json(updatedBookings.rows[0]);
+    res.json(updatedBooking.rows[0]);
   }
 catch(err){
     console.error(err.message);
@@ -87,6 +87,24 @@ app.get("/bookings" , async (req, res) => {
   }
 });
 
+app.post("/signup", async (req, res) => {
+  const { name, email, password } = req.body; 
+  try {
+    const newUser = await pool.query(
+      `INSERT INTO users (name, email, password)
+      VALUES ($1, $2, $3)
+       RETURNING *`,
+      [name, email, password]
+    );
+    res.json(newUser.rows[0]);
+  }
+catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "An error occurred while creating the user" });
+  }
+
+  
+});
 app.listen(5000, () => {
 
   console.log("Server is running on port 5000");
