@@ -28,6 +28,7 @@ function CalendarIcon() {
 import {Link} from "react-router-dom";
 
 function Home() {
+  const token = localStorage.getItem("token");
   const [customerName, setCustomerName] = useState("");
   const [hotelName, setHotelName] = useState("");
   const [checkIn, setCheckInName] = useState("");
@@ -58,6 +59,13 @@ function Home() {
     setMenuOpen(false);
     document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    alert("Logged out successfully!");
+    window.location.href = "/";
+  }
 
   // Helper function to increment guests (no upper limit)
   const handleGuestIncrement = () => {
@@ -224,14 +232,43 @@ return (
           </li>
         </ul>
 
-        <div className="navbar-auth">
-          <Link to="/login" className="navbar-auth-btn navbar-auth-btn--login">
-            Login
-          </Link>
-          <Link to="/signup" className="navbar-auth-btn navbar-auth-btn--signup">
-            Sign Up
-          </Link>
-        </div>
+<div className="navbar-auth">
+
+  {token ? (
+    <>
+      <Link
+        to="/profile"
+        className="navbar-auth-btn navbar-auth-btn--login"
+      >
+        Profile
+      </Link>
+
+      <button
+        className="navbar-auth-btn navbar-auth-btn--signup"
+        onClick={handleLogout}
+      >
+        Logout
+      </button>
+    </>
+  ) : (
+    <>
+      <Link
+        to="/login"
+        className="navbar-auth-btn navbar-auth-btn--login"
+      >
+        Login
+      </Link>
+
+      <Link
+        to="/signup"
+        className="navbar-auth-btn navbar-auth-btn--signup"
+      >
+        Sign Up
+      </Link>
+    </>
+  )}
+
+</div>
       </nav>
 
       <section className="hero" aria-label="Welcome">
@@ -339,7 +376,7 @@ return (
                   aria-label="Decrease guest count"
                   disabled={guests === 1}
                 >
-                  −
+                  
                 </button>
                 <span className="hero-guest-count">
                   {guests} {guests === 1 ? "Guest" : "Guests"}

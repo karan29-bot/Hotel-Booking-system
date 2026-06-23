@@ -1,6 +1,7 @@
 const pool = require("./db");
 const cors = require("cors");
 const express = require("express");
+const jwt = require("jsonwebtoken");
 
 const app = express();
 
@@ -101,10 +102,37 @@ app.post("/signup", async (req, res) => {
 catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "An error occurred while creating the user" });
-  }
+  } })
 
-  
-});
+  app.post("/login", async (req, res) => {
+    const { email, password } = req.body;
+    try {
+      const user = await pool.query(
+        'SELECT * FROM users WHERE email = $1 AND password = $2',
+        [email, password]
+      );
+
+      if (user.rows.length > 0) {
+        const token = jwt.sign (
+          {
+            id: user.rows[0].id,
+            email: user.rows[0].email,
+          },
+          "mysecretkey",
+          { expiresIn: "1h" }
+          
+        );
+        res.json({ token, user: user.rows[0] });
+      }
+      else {
+        res.status(401).json({ error: "Invalid email or password" });
+      }
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: "An error occurred while logging in" });
+    }
+  });
+
 app.listen(5000, () => {
 
   console.log("Server is running on port 5000");

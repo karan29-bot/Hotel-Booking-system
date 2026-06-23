@@ -1,7 +1,36 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "./styles/login.css";
 
 function Login() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const handleLogin = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
+      console.log("Response OK:", response.ok);
+      console.log(" Data:", data);
+      console.log("Token from backend:", data.token);
+      if (response.ok) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        console.log("Token stored in localStorage:", localStorage.getItem("token"));
+        console.log("User stored in localStorage:", localStorage.getItem("user"));
+        alert("Login successful!");
+        navigate("/");
+      } else {
+        console.error(data.error);
+      }
+    } catch (error) {
+      console.error("An error occurred while logging in", error);
+    }
+  };
   return (
     <div className="login-page">
       <div className="glass-card">
@@ -21,18 +50,23 @@ function Login() {
           <input
             type="email"
             placeholder="EMAIL ADDRESS"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
 
           <input
             type="password"
             placeholder="PASSWORD"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
 
           <p className="forgot-password">
             Forgot password?
           </p>
 
-          <button className="login-btn">
+          <button className="login-btn"
+            onClick={handleLogin}>
             LOGIN
           </button>
 
