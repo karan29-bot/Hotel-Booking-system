@@ -1,3 +1,4 @@
+const verifyToken = require("./middleware/auth");
 const pool = require("./db");
 const cors = require("cors");
 const express = require("express");
@@ -76,7 +77,7 @@ catch(err){
 } 
 });
 
-app.get("/bookings" , async (req, res) => {
+app.get("/bookings" ,verifyToken, async (req, res) => {
   try {
     const allBookings = await pool.query(
       "SELECT * FROM bookings"
