@@ -29,9 +29,9 @@ import {Link} from "react-router-dom";
 
 function Home() {
   const token = localStorage.getItem("token");
+  const isAuthenticated = Boolean(token);
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
-  const [activeNav, setActiveNav] = useState("booking");
   const [menuOpen, setMenuOpen] = useState(false);
   const [location, setLocation] = useState("Bangalore");
   const [guests, setGuests] = useState(1);
@@ -48,12 +48,6 @@ function Home() {
     } else {
       input.focus();
     }
-  };
-
-  const scrollToSection = (sectionId, navKey) => {
-    setActiveNav(navKey);
-    setMenuOpen(false);
-    document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleLogout = () => {
@@ -79,9 +73,6 @@ function Home() {
       alert("Please fill in all fields: Location, Check-in, and Check-out dates");
       return;
     }
-    console.log("Search initiated:", { location, checkIn, checkOut, guests });
-    // Navigate to bookings section after validation
-    scrollToSection("bookings-list", "bookings");
   };
 
 
@@ -115,71 +106,62 @@ return (
           className={`navbar-links${menuOpen ? " navbar-links--open" : ""}`}
         >
           <li>
-            <button
-              type="button"
-              className={`navbar-link${activeNav === "bookings" ? " navbar-link--active" : ""}`}
-              onClick={() => scrollToSection("bookings-list", "bookings")}
-            >
-              Bookings
-            </button>
+            <Link to="/" className="navbar-link" onClick={() => setMenuOpen(false)}>
+              Home
+            </Link>
           </li>
           <li>
             <button
               type="button"
-              className={`navbar-link${activeNav === "hotels" ? " navbar-link--active" : ""}`}
-              onClick={() => scrollToSection("hotels-section", "hotels")}
+              className="navbar-link"
+              onClick={() => {
+                setMenuOpen(false);
+                document.getElementById("hotels-section")?.scrollIntoView({ behavior: "smooth" });
+              }}
             >
               Hotels
             </button>
           </li>
-          <li>
-            <button
-              type="button"
-              className={`navbar-link${activeNav === "profile" ? " navbar-link--active" : ""}`}
-              onClick={() => scrollToSection("profile-section", "profile")}
-            >
-              Profile
-            </button>
-          </li>
+          {isAuthenticated && (
+            <>
+              <li>
+                <button
+                  type="button"
+                  className="navbar-link"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  My Bookings
+                </button>
+              </li>
+              <li>
+                <Link to="/profile" className="navbar-link" onClick={() => setMenuOpen(false)}>
+                  Profile
+                </Link>
+              </li>
+            </>
+          )}
         </ul>
 
-<div className="navbar-auth">
+        <div className="navbar-auth">
+          {isAuthenticated ? (
+            <button
+              className="navbar-auth-btn navbar-auth-btn--signup"
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
+          ) : (
+            <>
+              <Link to="/login" className="navbar-auth-btn navbar-auth-btn--login">
+                Login
+              </Link>
 
-  {token ? (
-    <>
-      <Link
-        to="/profile"
-        className="navbar-auth-btn navbar-auth-btn--login"
-      >
-        Profile
-      </Link>
-
-      <button
-        className="navbar-auth-btn navbar-auth-btn--signup"
-        onClick={handleLogout}
-      >
-        Logout
-      </button>
-    </>
-  ) : (
-    <>
-      <Link
-        to="/login"
-        className="navbar-auth-btn navbar-auth-btn--login"
-      >
-        Login
-      </Link>
-
-      <Link
-        to="/signup"
-        className="navbar-auth-btn navbar-auth-btn--signup"
-      >
-        Sign Up
-      </Link>
-    </>
-  )}
-
-</div>
+              <Link to="/signup" className="navbar-auth-btn navbar-auth-btn--signup">
+                Sign Up
+              </Link>
+            </>
+          )}
+        </div>
       </nav>
 
       <section className="hero" aria-label="Welcome">
@@ -287,7 +269,7 @@ return (
                   aria-label="Decrease guest count"
                   disabled={guests === 1}
                 >
-                  
+                  −
                 </button>
                 <span className="hero-guest-count">
                   {guests} {guests === 1 ? "Guest" : "Guests"}
@@ -303,37 +285,21 @@ return (
               </div>
             </div>
 
-            {/* Search Button */}
-            <button
-              type="button"
-              className="hero-search-btn"
-              onClick={handleSearchHotels}
-              aria-label="Search hotels"
-            >
-              Search Hotels
-            </button>
+            <div className="hero-search-button-wrap">
+              <button
+                type="button"
+                className="hero-search-btn"
+                onClick={handleSearchHotels}
+                aria-label="Search hotels"
+              >
+                Search Hotels
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
       <PopularHotels />
-
-      <main className="app-main">
-      <section id="bookings-list" className="app-section app-section--placeholder">
-        <h2>Bookings</h2>
-        <p>Your bookings will appear here.</p>
-      </section>
-
-      <section id="hotels-section" className="app-section app-section--placeholder">
-        <h2>Hotels</h2>
-        <p>Hotels you have booked appear in your bookings list above.</p>
-      </section>
-
-      <section id="profile-section" className="app-section app-section--placeholder">
-        <h2>Profile</h2>
-        <p>Your guest profile details can go here later.</p>
-      </section>
-      </main>
     </div>
 
   );

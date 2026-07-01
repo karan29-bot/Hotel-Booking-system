@@ -64,61 +64,48 @@
 
 .hero-search {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
+  flex-wrap: wrap;
   width: min(100%, 1100px);
   margin-top: auto;
-  padding: 0;
-  height: 72px;
+  padding: 10px;
+  min-height: 78px;
   background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(8, 18, 36, 0.08);
   border-radius: 9999px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
   backdrop-filter: blur(10px);
   box-sizing: border-box;
-  gap: 0;
+  gap: 8px;
 }
 
-/* Base field styling - NOW HORIZONTAL ROW */
+/* Base field styling - flexible row layout */
 .hero-search-field {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
+  flex: 1 1 180px;
   min-width: 0;
-  padding: 0 20px;
-  height: 100%;
+  padding: 10px 16px;
+  min-height: 58px;
+  border-right: 1px solid rgba(8, 18, 36, 0.08);
 }
 
-/* Location field: 22% width */
+.hero-search-field:last-of-type {
+  border-right: none;
+}
+
 .hero-search-field--location {
-  flex: 0 0 auto;
-  flex-basis: 22%;
-  padding: 0 20px 0 24px;
-  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 10px 18px 10px 20px;
 }
 
-/* Check In field: 22% width */
-.hero-search-field--checkin {
-  flex: 0 0 auto;
-  flex-basis: 22%;
-  padding: 0 20px;
-  border-right: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-/* Check Out field: 22% width */
-.hero-search-field--checkout {
-  flex: 0 0 auto;
-  flex-basis: 22%;
-  padding: 0 20px;
-  border-right: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-/* Guests field: 18% width */
+.hero-search-field--checkin,
+.hero-search-field--checkout,
 .hero-search-field--guests {
-  flex: 0 0 auto;
-  flex-basis: 18%;
-  padding: 0 28px 0 20px;
+  padding: 10px 16px;
 }
 
 /* Date-specific styling - KEPT HORIZONTAL */
@@ -190,17 +177,19 @@
 .hero-search-date-control {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   flex: 1;
   min-width: 0;
+  width: 100%;
 }
 
 /* Date input - prevent compression */
 .hero-search-date {
-  flex: 1;
+  flex: 1 1 auto;
+  width: 100%;
   min-width: 0;
   max-width: 100%;
-  padding: 0;
+  padding: 0 4px 0 0;
   border: none;
   background: transparent;
   font-family: var(--sans);
@@ -264,6 +253,7 @@
   justify-content: center;
   gap: 8px;
   flex: 1;
+  width: 100%;
 }
 
 /* Guest counter buttons - smaller */
@@ -277,10 +267,10 @@
   border: 1px solid #ccc;
   background: #ffffff;
   color: #081224;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 999px;
   transition: all 0.2s ease;
   flex-shrink: 0;
 }
@@ -296,7 +286,10 @@
 }
 
 .hero-guest-btn:disabled {
-  opacity: 0.3;
+  opacity: 1;
+  background: #f2f2f2;
+  border-color: #ddd;
+  color: #aaa;
   cursor: not-allowed;
 }
 
@@ -312,30 +305,38 @@
 }
 
 /* Premium Search Hotels button */
+.hero-search-button-wrap {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
 .hero-search-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  height: 48px;
-  padding: 0 32px;
-  margin: 0 8px 0 16px;
+  min-height: 58px;
+  padding: 0 28px;
+  margin: 0;
   background: #ff6b35;
   color: #ffffff;
   border: none;
-  border-radius: 8px;
+  border-radius: 999px;
   font-family: var(--sans);
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.24);
   white-space: nowrap;
+  min-width: 170px;
 }
 
 .hero-search-btn:hover {
   background: #ff5a24;
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(255, 107, 53, 0.32);
 }
 
 .hero-search-btn:active {
@@ -361,44 +362,28 @@
     font-size: clamp(2rem, 9vw, 2.75rem);
   }
 
-  /* Mobile: Keep single row but make it scrollable */
   .hero-search {
     height: auto;
-    min-height: 64px;
-    padding: 8px;
-    gap: 0;
-    overflow-x: auto;
-    overflow-y: hidden;
+    min-height: 68px;
+    padding: 10px;
+    gap: 8px;
   }
 
-  /* Mobile: Adjust field proportions */
   .hero-search-field {
     padding: 8px 12px;
-    min-width: auto;
-  }
-
-  .hero-search-field--location {
-    flex-basis: 28%;
-    padding: 8px 12px 8px 16px;
-    border-right: 1px solid rgba(0, 0, 0, 0.08);
-  }
-
-  .hero-search-field--checkin {
-    flex-basis: 24%;
-    padding: 8px 12px;
-    border-right: 1px solid rgba(0, 0, 0, 0.08);
-  }
-
-  .hero-search-field--checkout {
-    flex-basis: 24%;
-    padding: 8px 12px;
-    border-right: 1px solid rgba(0, 0, 0, 0.08);
-  }
-
-  .hero-search-field--guests {
-    flex-basis: 20%;
-    padding: 8px 16px 8px 12px;
+    min-width: 0;
+    min-height: 50px;
+    flex: 1 1 calc(50% - 8px);
     border-right: none;
+  }
+
+  .hero-search-button-wrap {
+    width: 100%;
+  }
+
+  .hero-search-btn {
+    width: 100%;
+    min-width: 0;
   }
 
   .hero-search-label {
@@ -437,9 +422,9 @@
 
   /* Mobile: Compact search button */
   .hero-search-btn {
-    height: 44px;
+    min-height: 50px;
     padding: 0 20px;
-    margin: 8px 8px 8px 12px;
+    margin: 0;
     font-size: 0.85rem;
     flex-shrink: 0;
   }
@@ -458,8 +443,12 @@
     font-size: 0.8rem;
   }
 
+  .hero-search-field {
+    flex-basis: 100%;
+  }
+
   .hero-search-btn {
-    height: 40px;
+    min-height: 46px;
     padding: 0 16px;
     font-size: 0.8rem;
   }

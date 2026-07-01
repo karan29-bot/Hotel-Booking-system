@@ -5,6 +5,16 @@ function HotelCard({ name, location, rating, pricePerNight, imageUrl }) {
     alert(`Proceeding to book: ${name}`);
   };
 
+  const stars = Array.from({ length: 5 }, (_, index) => (
+    <span
+      key={`${name}-star-${index}`}
+      className={`hotel-card__star${index < Math.round(rating) ? " hotel-card__star--filled" : ""}`}
+      aria-hidden="true"
+    >
+      ★
+    </span>
+  ));
+
   return (
     <article className="hotel-card">
       <div className="hotel-card__image-container">
@@ -15,6 +25,20 @@ function HotelCard({ name, location, rating, pricePerNight, imageUrl }) {
           aria-label={name}
         />
         <div className="hotel-card__overlay" />
+      </div>
+      <div className="hotel-card__body">
+        <h3 className="hotel-card__name">{name}</h3>
+        <p className="hotel-card__location">{location}</p>
+        <div className="hotel-card__meta">
+          <span className="hotel-card__rating" aria-label={`Rating ${rating} out of 5`}>
+            {stars}
+            <span className="hotel-card__rating-value">{rating}</span>
+          </span>
+          <p className="hotel-card__price">
+            ₹{pricePerNight.toLocaleString("en-IN")}
+            <span className="hotel-card__price-unit"> / night</span>
+          </p>
+        </div>
         <button
           type="button"
           className="hotel-card__book-btn"
@@ -23,19 +47,6 @@ function HotelCard({ name, location, rating, pricePerNight, imageUrl }) {
         >
           Book Now
         </button>
-      </div>
-      <div className="hotel-card__body">
-        <h3 className="hotel-card__name">{name}</h3>
-        <p className="hotel-card__location">{location}</p>
-        <div className="hotel-card__meta">
-          <span className="hotel-card__rating" aria-label={`Rating ${rating} out of 5`}>
-            ★ {rating}
-          </span>
-          <p className="hotel-card__price">
-            ₹{pricePerNight.toLocaleString("en-IN")}
-            <span className="hotel-card__price-unit"> / night</span>
-          </p>
-        </div>
       </div>
     </article>
   );

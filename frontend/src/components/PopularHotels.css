@@ -24,14 +24,33 @@
 
 .popular-hotels__group {
   margin-bottom: clamp(32px, 5vw, 48px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
-.popular-hotels__group:last-child {
-  margin-bottom: 0;
+.popular-hotels__group--hidden {
+  display: none;
+}
+
+.popular-hotels__destination-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.popular-hotels__destination-list--expanded .popular-hotels__group--hidden {
+  display: block;
+  animation: popular-hotels-fade-in 0.25s ease;
+}
+
+.popular-hotels__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 .popular-hotels__city {
-  margin: 0 0 16px;
+  margin: 0;
   font-family: var(--heading);
   font-size: clamp(1.15rem, 2vw, 1.35rem);
   font-weight: 600;
@@ -39,20 +58,88 @@
   text-align: left;
 }
 
-.popular-hotels__grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: clamp(16px, 2.5vw, 24px);
+.popular-hotels__controls {
+  display: flex;
+  gap: 8px;
 }
 
-@media (max-width: 900px) {
-  .popular-hotels__grid {
-    grid-template-columns: repeat(2, 1fr);
+.popular-hotels__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: var(--shadow);
+}
+
+.popular-hotels__arrow:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.popular-hotels__slider {
+  display: flex;
+  gap: clamp(16px, 2.5vw, 24px);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 8px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.popular-hotels__slider::-webkit-scrollbar {
+  display: none;
+}
+
+.popular-hotels__slide {
+  flex: 0 0 min(320px, 86vw);
+  scroll-snap-align: start;
+}
+
+.popular-hotels__toggle {
+  display: block;
+  margin: clamp(8px, 2vw, 16px) auto 0;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-h);
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-family: var(--body);
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.popular-hotels__toggle:hover {
+  background: rgba(20, 44, 74, 0.06);
+  transform: translateY(-1px);
+}
+
+@keyframes popular-hotels-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 @media (max-width: 560px) {
-  .popular-hotels__grid {
-    grid-template-columns: 1fr;
+  .popular-hotels__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .popular-hotels__slide {
+    flex-basis: min(280px, 82vw);
   }
 }

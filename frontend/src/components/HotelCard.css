@@ -1,146 +1,57 @@
 .hotel-card {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
   box-shadow: var(--shadow);
-  /* Smooth transition for transform and shadow on hover */
-  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
-              box-shadow 0.3s ease;
-  /* GPU acceleration for smoother animations */
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
   transform: translateZ(0);
 }
 
-/* Premium hover: slightly lift card without scaling distortion */
 .hotel-card:hover {
-  /* translateY(-8px) lifts the card 8px upward for depth */
-  transform: translateY(-8px);
-  /* Enhanced shadow creates floating effect on hover */
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
+  transform: translateY(-6px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.16);
 }
 
-/* Container for image - sets up absolute positioning context */
 .hotel-card__image-container {
   position: relative;
-  /* Maintains 4:3 aspect ratio for responsive images */
   aspect-ratio: 4 / 3;
-  /* Clips children to container bounds */
   overflow: hidden;
-  border-radius: 12px 12px 0 0;
+  border-radius: 14px 14px 0 0;
 }
 
 .hotel-card__image {
-  /* Full dimensions to fill container */
   width: 100%;
   height: 100%;
-  /* Cover scales image to fill without distortion */
   background-size: cover;
-  /* Center positions image within container */
   background-position: center;
-  /* Prevents image tiling */
   background-repeat: no-repeat;
-  /* Fallback color while loading */
   background-color: var(--code-bg);
-  /* Smooth filter transition - no blur needed on image itself */
-  transition: filter 0.3s ease;
+  transition: transform 0.3s ease;
 }
 
-/* Dark gradient overlay - rises from bottom on hover */
+.hotel-card:hover .hotel-card__image {
+  transform: scale(1.03);
+}
+
 .hotel-card__overlay {
-  /* Absolute positioning covers entire image area */
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  /* Linear gradient: transparent at top → dark navy at bottom */
-  /* This creates a natural fade effect focusing attention on button */
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.2) 40%,
-    rgba(8, 6, 13, 0.8) 100%
-  );
-  /* Sits below button */
-  z-index: 1;
-  /* Smooth opacity transition for fade in/out */
-  transition: opacity 0.4s ease;
-  /* Hidden by default */
-  opacity: 0;
-}
-
-/* Show gradient overlay on card hover */
-.hotel-card:hover .hotel-card__overlay {
-  /* Full opacity reveals the gradient */
-  opacity: 1;
-}
-
-/* Premium "Book Now" button - animates from bottom to top */
-.hotel-card__book-btn {
-  /* Absolute positioning at bottom of image */
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  /* Sits above overlay */
-  z-index: 2;
-  /* Premium button styling */
-  padding: 12px 32px;
-  font-size: 1rem;
-  font-weight: 600;
-  font-family: var(--sans);
-  /* Warm orange color for premium feel - complements dark theme */
-  background: #ff6b35;
-  /* White text for contrast on orange background */
-  color: #ffffff;
-  /* No border for clean look */
-  border: none;
-  border-radius: 8px;
-  /* Pointer feedback for interactivity */
-  cursor: pointer;
-  /* Smooth all transitions with premium easing */
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  /* Initial state: button hidden below bottom edge */
-  /* translate(-50%, 100%) moves button down 100% of its height */
-  transform: translate(-50%, 100%);
-  /* Initially invisible */
-  opacity: 0;
-  /* Depth shadow for button elevation */
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
-  /* Prevent text selection on double-click */
-  user-select: none;
-}
-
-/* Button animates up on card hover */
-.hotel-card:hover .hotel-card__book-btn {
-  /* Fade in to full opacity */
-  opacity: 1;
-  /* translate(-50%, -20px) moves button up from bottom with 20px breathing room */
-  transform: translate(-50%, -20px);
-}
-
-/* Extra polish: button interaction on direct hover */
-.hotel-card__book-btn:hover {
-  /* Slight scale increase for interactive feedback */
-  transform: translate(-50%, -20px) scale(1.05);
-  /* Darker orange on hover */
-  background: #ff5a24;
-  /* Enhanced shadow on interaction */
-  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
-}
-
-/* Button press feedback */
-.hotel-card__book-btn:active {
-  /* Scale down slightly for tactile feedback */
-  transform: translate(-50%, -20px) scale(0.98);
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.15) 60%, rgba(8, 6, 13, 0.45) 100%);
+  pointer-events: none;
 }
 
 .hotel-card__body {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  gap: 6px;
-  padding: 16px;
+  gap: 8px;
+  padding: 16px 16px 18px;
   text-align: left;
 }
 
@@ -155,9 +66,9 @@
 
 .hotel-card__location {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   color: var(--text);
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .hotel-card__meta {
@@ -165,13 +76,30 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 .hotel-card__rating {
-  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.9rem;
   font-weight: 600;
   color: #b8860b;
+}
+
+.hotel-card__star {
+  color: #d7d7d7;
+  font-size: 0.95rem;
+}
+
+.hotel-card__star--filled {
+  color: #f5b942;
+}
+
+.hotel-card__rating-value {
+  margin-left: 2px;
+  color: var(--text-h);
 }
 
 .hotel-card__price {
@@ -185,4 +113,40 @@
   font-weight: 400;
   font-size: 0.8rem;
   color: var(--text);
+}
+
+.hotel-card__book-btn {
+  margin-top: auto;
+  width: 100%;
+  padding: 11px 16px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff7a3d, #ff5b24);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: var(--sans);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: 0 8px 16px rgba(255, 91, 36, 0.22);
+}
+
+.hotel-card__book-btn:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, #ff864d, #ff672b);
+  box-shadow: 0 10px 18px rgba(255, 91, 36, 0.28);
+}
+
+.hotel-card__book-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 560px) {
+  .hotel-card {
+    max-width: none;
+  }
+
+  .hotel-card__body {
+    padding: 14px 14px 16px;
+  }
 }
