@@ -6,7 +6,7 @@ function Signup() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [retypedPassword, setRetypedPassword] = useState("");
+    const [retypedPassword, setRetypedPassword] = useState(""); // Hash the password before sending it to the backend
 
     async function handleSignup() {
         if (password !== retypedPassword) {

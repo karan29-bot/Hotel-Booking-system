@@ -1,4 +1,7 @@
+
+require("dotenv").config();
 const verifyToken = require("./middleware/auth");
+const bcrypt = require("bcrypt");
 const pool = require("./db");
 const cors = require("cors");
 const express = require("express");
@@ -91,12 +94,14 @@ app.get("/bookings" ,verifyToken, async (req, res) => {
 
 app.post("/signup", async (req, res) => {
   const { name, email, password } = req.body; 
+  const hashedPassword = await bcrypt.hash(password, 10);
+
   try {
     const newUser = await pool.query(
       `INSERT INTO users (name, email, password)
       VALUES ($1, $2, $3)
        RETURNING *`,
-      [name, email, password]
+      [name, email, hashedPassword]
     );
     res.json(newUser.rows[0]);
   }
@@ -109,17 +114,20 @@ catch (err) {
     const { email, password } = req.body;
     try {
       const user = await pool.query(
-        'SELECT * FROM users WHERE email = $1 AND password = $2',
-        [email, password]
+        'SELECT * FROM users WHERE email = $1',
+        [email]
       );
+      const validPassword =
+  user.rows.length > 0 &&
+  await bcrypt.compare(password, user.rows[0].password);
 
-      if (user.rows.length > 0) {
+      if (user.rows.length > 0 && validPassword) {
         const token = jwt.sign (
           {
             id: user.rows[0].id,
             email: user.rows[0].email,
           },
-          "mysecretkey",
+          process.env.JWT_SECRET,
           { expiresIn: "1h" }
           
         );
