@@ -23,8 +23,27 @@
 }
 
 .popular-hotels__group {
+  position: relative;
   margin-bottom: clamp(32px, 5vw, 48px);
+  padding: clamp(20px, 3vw, 32px);
+  border-radius: 20px;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
   transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.popular-hotels__group::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.52);
+  z-index: 0;
+}
+
+.popular-hotels__header,
+.popular-hotels__slider {
+  position: relative;
+  z-index: 1;
 }
 
 .popular-hotels__group--hidden {
@@ -71,7 +90,7 @@
   height: 36px;
   border: 1px solid var(--border);
   border-radius: 50%;
-  background: var(--bg);
+  background: #fff;
   color: var(--text-h);
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
