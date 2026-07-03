@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import HotelCard from "./HotelCard";
 import { popularDestinations } from "../data/popularHotels";
 import "./PopularHotels.css";
@@ -14,6 +15,7 @@ const cityBanners = {
 const defaultBanner = "https://images.unsplash.com/photo-1519677100203-a0e668c92439?auto=format&fit=crop&w=1600&q=80";
 
 function PopularHotels() {
+  const navigate = useNavigate();
   const sliderRefs = useRef({});
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -80,7 +82,10 @@ function PopularHotels() {
                 >
                   {destination.hotels.map((hotel) => (
                     <div key={hotel.id} className="popular-hotels__slide">
-                      <HotelCard {...hotel} />
+                      <HotelCard
+                        {...hotel}
+                        onBook={() => navigate(`/booking/${hotel.id}`)}
+                      />
                     </div>
                   ))}
                 </div>

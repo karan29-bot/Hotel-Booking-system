@@ -1,7 +1,12 @@
 import "./HotelCard.css";
 
-function HotelCard({ name, location, rating, pricePerNight, imageUrl }) {
+function HotelCard({ name, location, rating, pricePerNight, imageUrl, onBook }) {
   const handleBookNow = () => {
+    if (onBook) {
+      onBook();
+      return;
+    }
+
     alert(`Proceeding to book: ${name}`);
   };
 
