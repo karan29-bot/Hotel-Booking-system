@@ -7,7 +7,7 @@ const hotelData = {
   name: "Aurora Lake Resort",
   image:
     "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
-  rating: "4.9",
+  rating: 4.9,
   location: "Bangalore, India",
   price: "$220",
   about:
@@ -132,13 +132,12 @@ function HotelDetails() {
               </div>
             </div>
 
-            <button className="book-now-btn book-now-btn--secondary" type="button">
-              Book Now
-            </button>
           </div>
         </div>
 
         <div className="hotel-content">
+          <div className="hotel-details-layout">
+            <div className="hotel-details-main">
           <section className="detail-section">
             <h2>About</h2>
             <p>{currentHotel.about}</p>
@@ -228,21 +227,17 @@ function HotelDetails() {
               })}
             </div>
 
-            <button
-              className="book-selected-btn"
-              type="button"
-              disabled={Object.values(roomQuantities).every((qty) => qty === 0)}
-            >
-              Book Selected Rooms
-            </button>
           </section>
 
-          {hasSelectedRooms && (
-            <section className="detail-section">
+            </div>
+
+            <aside className="hotel-details-sidebar" aria-label="Booking Summary">
+            <section className="detail-section booking-summary-section">
               <h2>Booking Summary</h2>
               <div className="booking-summary">
                 <div className="summary-items">
-                  {selectedRooms.map((room) => (
+                  {hasSelectedRooms ? (
+                    selectedRooms.map((room) => (
                     <div className="summary-item" key={room.id}>
                       <div className="summary-item-main">
                         <h4>{room.name}</h4>
@@ -255,7 +250,10 @@ function HotelDetails() {
                         </span>
                       </div>
                     </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="summary-empty">No rooms selected</p>
+                  )}
                 </div>
 
                 <div className="summary-totals">
@@ -285,7 +283,8 @@ function HotelDetails() {
                 </button>
               </div>
             </section>
-          )}
+            </aside>
+          </div>
         </div>
       </div>
     </div>

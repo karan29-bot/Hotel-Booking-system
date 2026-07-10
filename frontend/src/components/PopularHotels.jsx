@@ -84,7 +84,7 @@ function PopularHotels() {
                     <div key={hotel.id} className="popular-hotels__slide">
                       <HotelCard
                         {...hotel}
-                        onBook={() => navigate(`/booking/${hotel.id}`)}
+                        onBook={() => navigate(`/hotel/${hotel.id}`)}
                       />
                     </div>
                   ))}

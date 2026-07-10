@@ -1,17 +1,12 @@
 import { useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { popularDestinations } from "../data/popularHotels";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 function Booking() {
   const navigate = useNavigate();
-  const { hotelId } = useParams();
+  const location = useLocation();
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
 
-  const hotel = useMemo(() => {
-    return popularDestinations
-      .flatMap((destination) => destination.hotels)
-      .find((hotelItem) => hotelItem.id === hotelId);
-  }, [hotelId]);
+  const { hotel, selectedRooms, totalPrice, totalRooms, totalGuests } = location.state || {};
 
   const today = new Date().toISOString().split("T")[0];
   const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
@@ -25,10 +20,6 @@ function Booking() {
     email: storedUser.email || "",
     phone: storedUser.phone || "",
     country: storedUser.country || "",
-    adults: 2,
-    children: 0,
-    roomType: "Deluxe",
-    rooms: 1,
     specialRequests: "",
   });
 
@@ -44,14 +35,32 @@ function Booking() {
     return diff > 0 ? diff : 1;
   }, [checkIn, checkOut]);
 
-  const totalPrice = hotel ? hotel.pricePerNight * form.rooms * nights : 0;
-
   const handleSubmit = (event) => {
     event.preventDefault();
+    
+    const bookingData = {
+      hotel,
+      selectedRooms,
+      totalRooms,
+      totalGuests,
+      totalPrice,
+      guestDetails: {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        phone: form.phone,
+        country: form.country,
+        specialRequests: form.specialRequests,
+      },
+      checkIn,
+      checkOut,
+    };
+
+    console.log("Booking submitted:", bookingData);
     setMessage("Booking confirmed! This is a demo summary.");
   };
 
-  if (!hotel) {
+  if (!location.state || !hotel) {
     return (
       <main className="booking-page">
         <div className="booking-heading">
@@ -150,51 +159,6 @@ function Booking() {
                 />
               </label>
 
-              <label className="booking-field">
-                <span>Adults</span>
-                <input
-                  type="number"
-                  name="adults"
-                  min="1"
-                  value={form.adults}
-                  onChange={handleChange}
-                  required
-                />
-              </label>
-
-              <label className="booking-field">
-                <span>Children</span>
-                <input
-                  type="number"
-                  name="children"
-                  min="0"
-                  value={form.children}
-                  onChange={handleChange}
-                />
-              </label>
-
-              <label className="booking-field">
-                <span>Room Type</span>
-                <select name="roomType" value={form.roomType} onChange={handleChange}>
-                  <option>Deluxe</option>
-                  <option>Superior</option>
-                  <option>Suite</option>
-                  <option>Presidential</option>
-                </select>
-              </label>
-
-              <label className="booking-field">
-                <span>Number of Rooms</span>
-                <input
-                  type="number"
-                  name="rooms"
-                  min="1"
-                  value={form.rooms}
-                  onChange={handleChange}
-                  required
-                />
-              </label>
-
               <label className="booking-field booking-field--full">
                 <span>Special Requests</span>
                 <textarea
@@ -220,7 +184,7 @@ function Booking() {
           <div className="booking-summary-hotel">
             <div
               className="booking-summary-image"
-              style={{ backgroundImage: `url(${hotel.imageUrl})` }}
+              style={{ backgroundImage: `url(${hotel.image})` }}
               role="img"
               aria-label={hotel.name}
             />
@@ -266,21 +230,23 @@ function Booking() {
           </div>
 
           <div className="booking-summary-pricing">
+            {selectedRooms.map((room) => (
+              <div className="booking-summary-row" key={room.id}>
+                <span>{room.name} x{room.quantity}</span>
+                <strong>${room.priceValue * room.quantity}</strong>
+              </div>
+            ))}
             <div className="booking-summary-row">
-              <span>Price per night</span>
-              <strong>₹{hotel.pricePerNight.toLocaleString("en-IN")}</strong>
+              <span>Total Rooms</span>
+              <strong>{totalRooms}</strong>
             </div>
             <div className="booking-summary-row">
-              <span>Rooms</span>
-              <strong>{form.rooms}</strong>
-            </div>
-            <div className="booking-summary-row">
-              <span>Night(s)</span>
-              <strong>{nights}</strong>
+              <span>Total Guests</span>
+              <strong>{totalGuests}</strong>
             </div>
             <div className="booking-summary-total">
               <span>Total price</span>
-              <strong>₹{totalPrice.toLocaleString("en-IN")}</strong>
+              <strong>${totalPrice}</strong>
             </div>
           </div>
         </aside>
