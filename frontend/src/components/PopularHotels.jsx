@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom";
 import HotelCard from "./HotelCard";
 import { popularDestinations } from "../data/popularHotels";
 import "./PopularHotels.css";
+
+const getDestinationId = (city) =>
+  `destination-${city.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+
+const getHotelId = (hotelId) => `hotel-${hotelId}`;
+
 const cityBanners = {
   Bangalore: "https://images.unsplash.com/photo-1524813686514-a57563d77965?auto=format&fit=crop&w=1600&q=80",
   Goa: "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1600&q=80",
@@ -14,10 +20,16 @@ const cityBanners = {
 // fallback if a city isn't in the map above
 const defaultBanner = "https://images.unsplash.com/photo-1519677100203-a0e668c92439?auto=format&fit=crop&w=1600&q=80";
 
-function PopularHotels() {
+function PopularHotels({ highlightedDestination = "", highlightedHotelId = "" }) {
   const navigate = useNavigate();
   const sliderRefs = useRef({});
   const [isExpanded, setIsExpanded] = useState(false);
+  const highlightedIndex = popularDestinations.findIndex(
+    (destination) =>
+      destination.city === highlightedDestination ||
+      destination.hotels.some((hotel) => hotel.id === highlightedHotelId)
+  );
+  const showAllDestinations = isExpanded || highlightedIndex > 2;
 
   const scrollSlider = (city, direction) => {
     const container = sliderRefs.current[city];
@@ -42,14 +54,16 @@ function PopularHotels() {
           Popular Destinations
         </h2>
 
-        <div className={`popular-hotels__destination-list ${isExpanded ? "popular-hotels__destination-list--expanded" : ""}`}>
+        <div className={`popular-hotels__destination-list ${showAllDestinations ? "popular-hotels__destination-list--expanded" : ""}`}>
           {popularDestinations.map((destination, index) => {
-            const isVisible = index < 3 || isExpanded;
+            const isVisible = index < 3 || showAllDestinations;
+            const isHighlighted = destination.city === highlightedDestination;
 
             return (
               <div
+                id={getDestinationId(destination.city)}
                 key={destination.city}
-                className={`popular-hotels__group ${isVisible ? "" : "popular-hotels__group--hidden"}`}
+                className={`popular-hotels__group ${isVisible ? "" : "popular-hotels__group--hidden"}${isHighlighted ? " popular-hotels__group--highlighted" : ""}`}
                 style={{ backgroundImage: `url(${cityBanners[destination.city] || defaultBanner})` }}
               >
                 <div className="popular-hotels__header">
@@ -81,7 +95,11 @@ function PopularHotels() {
                   className="popular-hotels__slider"
                 >
                   {destination.hotels.map((hotel) => (
-                    <div key={hotel.id} className="popular-hotels__slide">
+                    <div
+                      id={getHotelId(hotel.id)}
+                      key={hotel.id}
+                      className={`popular-hotels__slide${hotel.id === highlightedHotelId ? " popular-hotels__slide--highlighted" : ""}`}
+                    >
                       <HotelCard
                         {...hotel}
                         onBook={() => navigate(`/hotel/${hotel.id}`)}
@@ -101,7 +119,7 @@ function PopularHotels() {
             onClick={() => setIsExpanded((prev) => !prev)}
             aria-expanded={isExpanded}
           >
-            {isExpanded ? "Show Less" : "Show More Destinations"}
+            {showAllDestinations ? "Show Less" : "Show More Destinations"}
           </button>
         )}
       </div>

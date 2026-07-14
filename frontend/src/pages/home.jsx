@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import PopularHotels from "../components/PopularHotels";
+import { popularDestinations } from "../data/popularHotels";
 import "../App.css";
 
 function CalendarIcon() {
@@ -33,10 +34,15 @@ function Home() {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
-  const [location, setLocation] = useState("Bangalore");
+  const [destinationQuery, setDestinationQuery] = useState("");
+  const [isDestinationMenuOpen, setIsDestinationMenuOpen] = useState(false);
+  const [destinationMessage, setDestinationMessage] = useState("");
+  const [highlightedDestination, setHighlightedDestination] = useState("");
+  const [highlightedHotelId, setHighlightedHotelId] = useState("");
   const [guests, setGuests] = useState(1);
   const checkInRef = useRef(null);
   const checkOutRef = useRef(null);
+  const highlightTimeoutRef = useRef(null);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -67,12 +73,74 @@ function Home() {
     setGuests((prevGuests) => (prevGuests > 1 ? prevGuests - 1 : 1));
   };
 
-  // Handle search button click - triggers hotel search
+  const getDestinationId = (city) =>
+    `destination-${city.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+
+  const getHotelId = (hotelId) => `hotel-${hotelId}`;
+
+  const searchOptions = popularDestinations.flatMap((destination) => [
+    {
+      id: `destination-${destination.city}`,
+      type: "destination",
+      label: destination.city,
+      detail: "Destination",
+      destination,
+    },
+    ...destination.hotels.map((hotel) => ({
+      id: `hotel-${hotel.id}`,
+      type: "hotel",
+      label: hotel.name,
+      detail: destination.city,
+      destination,
+      hotel,
+    })),
+  ]);
+
+  const destinationSuggestions = searchOptions.filter((option) =>
+    option.label.toLowerCase().includes(destinationQuery.trim().toLowerCase())
+  );
+
+  const findSearchMatch = () => {
+    const query = destinationQuery.trim().toLowerCase();
+    if (!query) return null;
+
+    return (
+      searchOptions.find((option) => option.label.toLowerCase() === query) ||
+      searchOptions.find((option) => option.label.toLowerCase().includes(query))
+    );
+  };
+
+  const highlightSearchTarget = ({ destination, hotel }) => {
+    setDestinationMessage("");
+    setIsDestinationMenuOpen(false);
+    setHighlightedDestination(hotel ? "" : destination.city);
+    setHighlightedHotelId(hotel?.id || "");
+
+    window.requestAnimationFrame(() => {
+      const targetId = hotel ? getHotelId(hotel.id) : getDestinationId(destination.city);
+      document
+        .getElementById(targetId)
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    window.clearTimeout(highlightTimeoutRef.current);
+    highlightTimeoutRef.current = window.setTimeout(() => {
+      setHighlightedDestination("");
+      setHighlightedHotelId("");
+    }, 1800);
+  };
+
   const handleSearchHotels = () => {
-    if (!location || !checkIn || !checkOut) {
-      alert("Please fill in all fields: Location, Check-in, and Check-out dates");
+    const match = findSearchMatch();
+
+    if (!match) {
+      setDestinationMessage("No hotels found.");
+      setIsDestinationMenuOpen(false);
       return;
     }
+
+    setDestinationQuery(match.label);
+    highlightSearchTarget(match);
   };
 
 
@@ -175,26 +243,68 @@ return (
           <div className="hero-search" role="search" aria-label="Hotel search">
             {/* Location Section: 25% */}
             <div className="hero-search-field hero-search-field--location">
-              <label className="hero-search-label" htmlFor="location-select">
+              <label className="hero-search-label" htmlFor="destination-search">
                 Location
               </label>
-              <div className="hero-search-select-wrapper">
-                <select
-                  id="location-select"
-                  className="hero-search-select"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  aria-label="Select location"
-                >
-                  <option value="Bangalore">Bangalore</option>
-                  <option value="Goa">Goa</option>
-                  <option value="Mumbai">Mumbai</option>
-                  <option value="Delhi">Delhi</option>
-                  <option value="Chennai">Chennai</option>
-                </select>
-                <svg className="hero-search-dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
+              <div className="hero-search-destination">
+                <input
+                  id="destination-search"
+                  type="text"
+                  className="hero-search-destination-input"
+                  value={destinationQuery}
+                  onChange={(e) => {
+                    setDestinationQuery(e.target.value);
+                    setDestinationMessage("");
+                    setIsDestinationMenuOpen(true);
+                  }}
+                  onFocus={() => setIsDestinationMenuOpen(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleSearchHotels();
+                    }
+                  }}
+                  placeholder="Search destination or hotel"
+                  autoComplete="off"
+                  aria-autocomplete="list"
+                  aria-controls="destination-suggestions"
+                  aria-expanded={isDestinationMenuOpen}
+                />
+                {isDestinationMenuOpen && destinationQuery.trim() && (
+                  <div
+                    id="destination-suggestions"
+                    className="hero-search-suggestions"
+                    role="listbox"
+                  >
+                    {destinationSuggestions.length > 0 ? (
+                      destinationSuggestions.map((option) => (
+                        <button
+                          key={option.id}
+                          type="button"
+                          className="hero-search-suggestion"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => {
+                            setDestinationQuery(option.label);
+                            setDestinationMessage("");
+                            setIsDestinationMenuOpen(false);
+                          }}
+                          role="option"
+                        >
+                          <span className="hero-search-suggestion-label">
+                            {option.label}
+                          </span>
+                          <span className="hero-search-suggestion-detail">
+                            {option.detail}
+                          </span>
+                        </button>
+                      ))
+                    ) : (
+                      <p className="hero-search-suggestion-empty">
+                        No hotels found.
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -296,10 +406,18 @@ return (
               </button>
             </div>
           </div>
+          {destinationMessage && (
+            <p className="hero-search-message" role="status">
+              {destinationMessage}
+            </p>
+          )}
         </div>
       </section>
 
-      <PopularHotels />
+      <PopularHotels
+        highlightedDestination={highlightedDestination}
+        highlightedHotelId={highlightedHotelId}
+      />
     </div>
 
   );
