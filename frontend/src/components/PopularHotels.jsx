@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HotelCard from "./HotelCard";
-import { popularDestinations } from "../data/popularHotels";
+import { popularDestinations } from "../data/hotels";
 import "./PopularHotels.css";
 
 const getDestinationId = (city) =>

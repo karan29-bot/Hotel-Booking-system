@@ -1,6 +1,10 @@
 import "./HotelCard.css";
 
-function HotelCard({ name, location, rating, pricePerNight, imageUrl, onBook }) {
+function HotelCard({ name, city, location, rating, price, pricePerNight, image, imageUrl, onBook }) {
+  const displayLocation = city || location;
+  const displayPrice = price ?? pricePerNight;
+  const displayImage = image || imageUrl;
+
   const handleBookNow = () => {
     if (onBook) {
       onBook();
@@ -25,7 +29,7 @@ function HotelCard({ name, location, rating, pricePerNight, imageUrl, onBook }) 
       <div className="hotel-card__image-container">
         <div
           className="hotel-card__image"
-          style={{ backgroundImage: `url(${imageUrl})` }}
+          style={{ backgroundImage: `url(${displayImage})` }}
           role="img"
           aria-label={name}
         />
@@ -33,14 +37,14 @@ function HotelCard({ name, location, rating, pricePerNight, imageUrl, onBook }) 
       </div>
       <div className="hotel-card__body">
         <h3 className="hotel-card__name">{name}</h3>
-        <p className="hotel-card__location">{location}</p>
+        <p className="hotel-card__location">{displayLocation}</p>
         <div className="hotel-card__meta">
           <span className="hotel-card__rating" aria-label={`Rating ${rating} out of 5`}>
             {stars}
             <span className="hotel-card__rating-value">{rating}</span>
           </span>
           <p className="hotel-card__price">
-            ₹{pricePerNight.toLocaleString("en-IN")}
+            ₹{displayPrice.toLocaleString("en-IN")}
             <span className="hotel-card__price-unit"> / night</span>
           </p>
         </div>

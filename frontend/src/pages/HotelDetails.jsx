@@ -2,73 +2,38 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./styles/hotelDetails.css";
 
-const hotelData = {
-  id: "aurora-lake-resort",
-  name: "Aurora Lake Resort",
-  image:
-    "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
-  rating: 4.9,
-  location: "Bangalore, India",
-  price: "$220",
-  about:
-    "Set beside a serene lakefront, Aurora Lake Resort blends contemporary luxury with calm natural surroundings. Guests enjoy spacious suites, curated dining, and a tranquil spa experience designed for rest and rejuvenation.",
-  highlights: [
-    "Breakfast Included",
-    "Couple Friendly",
-    "Free Cancellation",
-    "24/7 Check-in",
-  ],
-  amenities: [
-    { icon: "🌊", label: "Lake View" },
-    { icon: "🛁", label: "Spa Access" },
-    { icon: "📶", label: "High Speed Wi-Fi" },
-    { icon: "🍽️", label: "Fine Dining" },
-    { icon: "🏋️", label: "Fitness Center" },
-    { icon: "🚗", label: "Airport Pickup" },
-  ],
-  rooms: [
-    {
-      id: "deluxe",
-      name: "Deluxe Room",
-      price: "$260",
-      bedType: "King Bed",
-      guests: "2 Guests",
-      size: "430 sq ft",
-      description: "A serene retreat with plush bedding, a private balcony, and elegant city views.",
-      amenities: ["Breakfast", "Wi-Fi", "Air Conditioning"],
-      availableRooms: 5,
-    },
-    {
-      id: "executive",
-      name: "Executive Room",
-      price: "$320",
-      bedType: "Queen Bed",
-      guests: "3 Guests",
-      size: "560 sq ft",
-      description: "Perfect for extended stays, with a lounge corner and upgraded bath amenities.",
-      amenities: ["Late Checkout", "Workspace", "Mini Bar"],
-      availableRooms: 3,
-    },
-    {
-      id: "luxury-suite",
-      name: "Luxury Suite",
-      price: "$480",
-      bedType: "King Bed",
-      guests: "4 Guests",
-      size: "820 sq ft",
-      description: "An expansive suite featuring a separate living area and panoramic lake views.",
-      amenities: ["Butler Service", "Spa Access", "Premium Lounge"],
-      availableRooms: 2,
-    },
-  ],
-};
+import { hotels } from "../data/hotels";
+
+const formatCurrency = (amount) => `₹${amount.toLocaleString("en-IN")}`;
 
 function HotelDetails() {
   const { hotelId } = useParams();
   const navigate = useNavigate();
   const [roomQuantities, setRoomQuantities] = useState({});
 
-  const currentHotel = hotelId === hotelData.id ? hotelData : hotelData;
+  const currentHotel = hotels.find((hotel) => hotel.id === hotelId);
+
+  if (!currentHotel) {
+    return (
+      <div className="hotel-details-page">
+        <div className="hotel-details-card">
+          <div className="hotel-content">
+            <section className="detail-section">
+              <h2>Hotel not found</h2>
+              <p>Choose another hotel from the home page.</p>
+              <button
+                className="proceed-booking-btn"
+                type="button"
+                onClick={() => navigate("/")}
+              >
+                Back to Home
+              </button>
+            </section>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleQuantityChange = (roomId, change) => {
     setRoomQuantities((prev) => {
@@ -88,7 +53,7 @@ function HotelDetails() {
     .map((room) => ({
       ...room,
       quantity: roomQuantities[room.id],
-      priceValue: parseInt(room.price.replace(/[^0-9]/g, "")),
+      priceValue: room.price,
       guestCount: parseInt(room.guests.replace(/[^0-9]/g, "")),
     }));
 
@@ -122,12 +87,12 @@ function HotelDetails() {
                 <h1 className="hotel-title">{currentHotel.name}</h1>
                 <div className="hotel-meta">
                   <span className="hotel-rating">⭐ {currentHotel.rating}</span>
-                  <span className="hotel-location">📍 {currentHotel.location}</span>
+                  <span className="hotel-location">📍 {currentHotel.city}</span>
                 </div>
               </div>
 
               <div className="hotel-price-card">
-                <span className="hotel-price">{currentHotel.price}</span>
+                <span className="hotel-price">{formatCurrency(currentHotel.price)}</span>
                 <span className="hotel-night">per night</span>
               </div>
             </div>
@@ -140,7 +105,7 @@ function HotelDetails() {
             <div className="hotel-details-main">
           <section className="detail-section">
             <h2>About</h2>
-            <p>{currentHotel.about}</p>
+            <p>{currentHotel.description}</p>
             <ul className="highlights-list">
               {currentHotel.highlights.map((item) => (
                 <li key={item}>{item}</li>
@@ -152,11 +117,11 @@ function HotelDetails() {
             <h2>Amenities</h2>
             <div className="amenities-grid">
               {currentHotel.amenities.map((item) => (
-                <div className="amenity-pill" key={item.label}>
+                <div className="amenity-pill" key={item}>
                   <span className="amenity-icon" aria-hidden="true">
-                    {item.icon}
+                    ✨
                   </span>
-                  <span>{item.label}</span>
+                  <span>{item}</span>
                 </div>
               ))}
             </div>
@@ -178,7 +143,7 @@ function HotelDetails() {
                       <div className="room-card-top">
                         <div>
                           <h3>{room.name}</h3>
-                          <p className="room-price">{room.price}</p>
+                          <p className="room-price">{formatCurrency(room.price)}</p>
                         </div>
                         <span className="room-badge">🛏 {room.bedType}</span>
                       </div>
@@ -244,9 +209,9 @@ function HotelDetails() {
                         <span className="summary-item-qty">x{room.quantity}</span>
                       </div>
                       <div className="summary-item-details">
-                        <span className="summary-item-price">{room.price}/room</span>
+                        <span className="summary-item-price">{formatCurrency(room.price)}/room</span>
                         <span className="summary-item-subtotal">
-                          ${room.priceValue * room.quantity}
+                          {formatCurrency(room.priceValue * room.quantity)}
                         </span>
                       </div>
                     </div>
@@ -268,7 +233,7 @@ function HotelDetails() {
                   <div className="summary-total-row summary-total-row--highlight">
                     <span>Total Price</span>
                     <span className="summary-total-value summary-total-value--price">
-                      ${totalPrice}
+                      {formatCurrency(totalPrice)}
                     </span>
                   </div>
                 </div>

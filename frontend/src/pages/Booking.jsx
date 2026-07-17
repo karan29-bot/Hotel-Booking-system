@@ -1,5 +1,7 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+
+const formatCurrency = (amount) => `₹${amount.toLocaleString("en-IN")}`;
 
 function Booking() {
   const navigate = useNavigate();
@@ -9,7 +11,9 @@ function Booking() {
   const { hotel, selectedRooms, totalPrice, totalRooms, totalGuests } = location.state || {};
 
   const today = new Date().toISOString().split("T")[0];
-  const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+  const tomorrowDate = new Date();
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const tomorrow = tomorrowDate.toISOString().split("T")[0];
 
   const [checkIn, setCheckIn] = useState(today);
   const [checkOut, setCheckOut] = useState(tomorrow);
@@ -27,13 +31,6 @@ function Booking() {
     const { name, value } = event.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
-
-  const nights = useMemo(() => {
-    const inDate = new Date(checkIn);
-    const outDate = new Date(checkOut);
-    const diff = Math.ceil((outDate - inDate) / 86400000);
-    return diff > 0 ? diff : 1;
-  }, [checkIn, checkOut]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -189,7 +186,7 @@ function Booking() {
               aria-label={hotel.name}
             />
             <div className="booking-summary-info">
-              <p className="booking-summary-location">{hotel.location}</p>
+              <p className="booking-summary-location">{hotel.city}</p>
               <h3 className="booking-summary-name">{hotel.name}</h3>
               <div className="booking-summary-rating">
                 {Array.from({ length: 5 }, (_, index) => (
@@ -233,7 +230,7 @@ function Booking() {
             {selectedRooms.map((room) => (
               <div className="booking-summary-row" key={room.id}>
                 <span>{room.name} x{room.quantity}</span>
-                <strong>${room.priceValue * room.quantity}</strong>
+                <strong>{formatCurrency(room.priceValue * room.quantity)}</strong>
               </div>
             ))}
             <div className="booking-summary-row">
@@ -246,7 +243,7 @@ function Booking() {
             </div>
             <div className="booking-summary-total">
               <span>Total price</span>
-              <strong>${totalPrice}</strong>
+              <strong>{formatCurrency(totalPrice)}</strong>
             </div>
           </div>
         </aside>

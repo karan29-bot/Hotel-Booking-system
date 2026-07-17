@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import PopularHotels from "../components/PopularHotels";
-import { popularDestinations } from "../data/popularHotels";
+import { popularDestinations } from "../data/hotels";
 import "../App.css";
 
 function CalendarIcon() {
