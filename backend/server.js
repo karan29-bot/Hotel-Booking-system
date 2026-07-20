@@ -1,5 +1,6 @@
 
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, ".env"), override: true });
 const verifyToken = require("./middleware/auth");
 const bcrypt = require("bcrypt");
 const pool = require("./db");
@@ -8,6 +9,14 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 
 const app = express();
+
+const jwtSecretDebug = () => ({
+  exists: Boolean(process.env.JWT_SECRET),
+  length: process.env.JWT_SECRET?.length || 0,
+  preview: process.env.JWT_SECRET
+    ? `${process.env.JWT_SECRET.slice(0, 2)}...${process.env.JWT_SECRET.slice(-2)}`
+    : null,
+});
 
 app.use(cors());
 app.use(express.json());
@@ -18,79 +27,7 @@ app.get("/", (req, res) => {
 
 });
 
-app.post("/bookings", async (req, res) => {
 
-  const { customerName, hotelName, checkIn, checkOut } = req.body;
-
-  try {
-
-    const newBooking = await pool.query(
-
-      `INSERT INTO bookings
-      (customer_name, hotel_name, check_in, check_out)
-
-      VALUES ($1, $2, $3, $4)
-
-      RETURNING *`,
-
-      [customerName, hotelName, checkIn, checkOut]
-
-    );
-
-    res.json(newBooking.rows[0]);
-
-  }
-
-  catch (err) {
-
-    console.error(err.message);
-
-  }
-
-});
-
-app.put("/bookings/:id", async (req,res) =>{
-  try{ 
-    const { id } = req.params;
-    const{
-      customerName,
-      hotelName,
-      checkIn,
-      checkOut
-    } =req.body;
-
-const updatedBooking = await pool.query(
-
-  `UPDATE bookings
-   SET
-   customer_name = $1,
-   hotel_name = $2,
-   check_in = $3,
-   check_out = $4
-   WHERE id = $5
-   RETURNING *`,
-
-  [customerName, hotelName, checkIn, checkOut, id]
-
-);
-    res.json(updatedBooking.rows[0]);
-  }
-catch(err){
-    console.error(err.message);
-} 
-});
-
-app.get("/bookings" ,verifyToken, async (req, res) => {
-  try {
-    const allBookings = await pool.query(
-      "SELECT * FROM bookings"
-    );
-    res.json(allBookings.rows);
-  }
-  catch(err){
- console.error(err.message);
-  }
-});
 
 app.post("/signup", async (req, res) => {
   const { name, email, password } = req.body; 
@@ -122,6 +59,8 @@ catch (err) {
   await bcrypt.compare(password, user.rows[0].password);
 
       if (user.rows.length > 0 && validPassword) {
+        console.log("[login] JWT_SECRET:", jwtSecretDebug());
+
         const token = jwt.sign (
           {
             id: user.rows[0].id,
@@ -131,6 +70,11 @@ catch (err) {
           { expiresIn: "1h" }
           
         );
+        console.log("[login] issued token debug:", {
+          userId: user.rows[0].id,
+          tokenParts: token.split(".").length,
+          tokenPreview: `${token.slice(0, 16)}...${token.slice(-16)}`,
+        });
         res.json({ token, user: user.rows[0] });
       }
       else {
@@ -141,6 +85,78 @@ catch (err) {
       res.status(500).json({ error: "An error occurred while logging in" });
     }
   });
+  
+  app.post("/api/bookings", verifyToken, async (req, res) => {
+  try {
+    const {
+      hotel,
+      selectedRooms,
+      totalRooms,
+      totalGuests,
+      totalPrice,
+      guestDetails,
+      checkIn,
+      checkOut,
+    } = req.body;
+
+    // User ID comes from the verified JWT
+    const userId = req.user.id;
+
+    const newBooking = await pool.query(
+      `INSERT INTO hotel_bookings (
+        user_id,
+        hotel_id,
+        hotel_name,
+        hotel_city,
+        selected_rooms,
+        total_rooms,
+        total_guests,
+        total_price,
+        guest_first_name,
+        guest_last_name,
+        guest_email,
+        guest_phone,
+        country,
+        special_requests,
+        check_in,
+        check_out
+      )
+      VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8,
+        $9, $10, $11, $12, $13, $14, $15, $16
+      )
+      RETURNING *`,
+      [
+        userId,
+        hotel.id,
+        hotel.name,
+        hotel.city,
+        JSON.stringify(selectedRooms),
+        totalRooms,
+        totalGuests,
+        totalPrice,
+        guestDetails.firstName,
+        guestDetails.lastName,
+        guestDetails.email,
+        guestDetails.phone,
+        guestDetails.country,
+        guestDetails.specialRequests,
+        checkIn,
+        checkOut,
+      ]
+    );
+
+    res.status(201).json({
+      message: "Booking created successfully",
+      booking: newBooking.rows[0],
+    });
+  } catch (err) {
+    console.error("Booking error:", err.message);
+    res.status(500).json({
+      error: "Failed to create booking",
+    });
+  }
+});
 
 app.listen(5000, () => {
 

@@ -21,6 +21,11 @@ function Login() {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
         console.log("Token stored in localStorage:", localStorage.getItem("token"));
+        console.log("[login] stored token debug:", {
+          tokenExists: Boolean(data.token),
+          tokenParts: data.token?.split(".").length || 0,
+          tokenPreview: data.token ? `${data.token.slice(0, 16)}...${data.token.slice(-16)}` : null,
+        });
         console.log("User stored in localStorage:", localStorage.getItem("user"));
         alert("Login successful!");
         navigate("/");

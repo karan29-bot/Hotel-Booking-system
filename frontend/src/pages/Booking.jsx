@@ -1,14 +1,45 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 
-const formatCurrency = (amount) => `₹${amount.toLocaleString("en-IN")}`;
+const formatCurrency = (amount) => `₹${Number(amount || 0).toLocaleString("en-IN")}`;
 
 function Booking() {
   const navigate = useNavigate();
   const location = useLocation();
-  const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
 
-  const { hotel, selectedRooms, totalPrice, totalRooms, totalGuests } = location.state || {};
+  let storedUser = {};
+  if (typeof window !== "undefined") {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      try {
+        storedUser = JSON.parse(savedUser);
+      } catch {
+        storedUser = {};
+      }
+    }
+  }
+
+  const safeStoredUser = storedUser && typeof storedUser === "object" ? storedUser : {};
+  const bookingState = location.state || {};
+  const { hotel, selectedRooms, totalPrice, totalRooms, totalGuests } = bookingState;
+  const safeHotel = hotel && typeof hotel === "object" ? hotel : null;
+  const safeSelectedRooms = Array.isArray(selectedRooms) ? selectedRooms : [];
+
+  const computedTotalRooms = typeof totalRooms === "number"
+    ? totalRooms
+    : safeSelectedRooms.reduce((sum, room) => sum + (Number(room?.quantity) || 0), 0);
+  const computedTotalGuests = typeof totalGuests === "number"
+    ? totalGuests
+    : safeSelectedRooms.reduce(
+        (sum, room) => sum + ((Number(room?.guestCount) || 0) * (Number(room?.quantity) || 0)),
+        0,
+      );
+  const computedTotalPrice = typeof totalPrice === "number"
+    ? totalPrice
+    : safeSelectedRooms.reduce(
+        (sum, room) => sum + ((Number(room?.priceValue) || 0) * (Number(room?.quantity) || 0)),
+        0,
+      );
 
   const today = new Date().toISOString().split("T")[0];
   const tomorrowDate = new Date();
@@ -19,11 +50,11 @@ function Booking() {
   const [checkOut, setCheckOut] = useState(tomorrow);
   const [message, setMessage] = useState("");
   const [form, setForm] = useState({
-    firstName: storedUser.name ? storedUser.name.split(" ")[0] : "",
-    lastName: storedUser.name ? storedUser.name.split(" ").slice(1).join(" ") : "",
-    email: storedUser.email || "",
-    phone: storedUser.phone || "",
-    country: storedUser.country || "",
+    firstName: safeStoredUser.name ? safeStoredUser.name.split(" ")[0] : "",
+    lastName: safeStoredUser.name ? safeStoredUser.name.split(" ").slice(1).join(" ") : "",
+    email: safeStoredUser.email || "",
+    phone: safeStoredUser.phone || "",
+    country: safeStoredUser.country || "",
     specialRequests: "",
   });
 
@@ -32,15 +63,20 @@ function Booking() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    
+
+    if (!safeHotel || safeSelectedRooms.length === 0) {
+      setMessage("Please select at least one room before confirming.");
+      return;
+    }
+
     const bookingData = {
-      hotel,
-      selectedRooms,
-      totalRooms,
-      totalGuests,
-      totalPrice,
+      hotel: safeHotel,
+      selectedRooms: safeSelectedRooms,
+      totalRooms: computedTotalRooms,
+      totalGuests: computedTotalGuests,
+      totalPrice: computedTotalPrice,
       guestDetails: {
         firstName: form.firstName,
         lastName: form.lastName,
@@ -53,11 +89,50 @@ function Booking() {
       checkOut,
     };
 
-    console.log("Booking submitted:", bookingData);
-    setMessage("Booking confirmed! This is a demo summary.");
+    try {
+      const token = localStorage.getItem("token");
+      console.log("[booking] token debug before submit:", {
+        tokenExists: Boolean(token),
+        tokenParts: token?.split(".").length || 0,
+        tokenPreview: token ? `${token.slice(0, 16)}...${token.slice(-16)}` : null,
+      });
+
+      if (!token) {
+        setMessage("Please log in again before confirming your booking.");
+        return;
+      }
+
+      const authorizationHeader = `Bearer ${token}`;
+      console.log("[booking] Authorization header debug:", {
+        startsWithBearer: authorizationHeader.startsWith("Bearer "),
+        parts: authorizationHeader.split(" ").length,
+      });
+
+      const response = await fetch("http://localhost:5000/api/bookings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authorizationHeader,
+        },
+        body: JSON.stringify(bookingData),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (response.ok) {
+        console.log("Booking saved:", data);
+        setMessage("Booking confirmed successfully!");
+      } else {
+        console.error("Booking failed:", data);
+        setMessage(data.error || "Booking failed.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      setMessage("Server error. Please try again.");
+    }
   };
 
-  if (!location.state || !hotel) {
+  if (!location.state || !safeHotel) {
     return (
       <main className="booking-page">
         <div className="booking-heading">
@@ -181,24 +256,24 @@ function Booking() {
           <div className="booking-summary-hotel">
             <div
               className="booking-summary-image"
-              style={{ backgroundImage: `url(${hotel.image})` }}
+              style={{ backgroundImage: `url(${safeHotel?.image || ""})` }}
               role="img"
-              aria-label={hotel.name}
+              aria-label={safeHotel?.name || "Hotel image"}
             />
             <div className="booking-summary-info">
-              <p className="booking-summary-location">{hotel.city}</p>
-              <h3 className="booking-summary-name">{hotel.name}</h3>
+              <p className="booking-summary-location">{safeHotel?.city || "Location unavailable"}</p>
+              <h3 className="booking-summary-name">{safeHotel?.name || "Hotel unavailable"}</h3>
               <div className="booking-summary-rating">
                 {Array.from({ length: 5 }, (_, index) => (
                   <span
-                    key={`${hotel.id}-star-${index}`}
-                    className={`booking-summary-star${index < Math.round(hotel.rating) ? " booking-summary-star--filled" : ""}`}
+                    key={`${safeHotel?.id || "hotel"}-star-${index}`}
+                    className={`booking-summary-star${index < Math.round(Number(safeHotel?.rating) || 0) ? " booking-summary-star--filled" : ""}`}
                     aria-hidden="true"
                   >
                     ★
                   </span>
                 ))}
-                <span>{hotel.rating.toFixed(1)}</span>
+                <span>{typeof safeHotel?.rating === "number" ? safeHotel.rating.toFixed(1) : "0.0"}</span>
               </div>
             </div>
           </div>
@@ -227,23 +302,23 @@ function Booking() {
           </div>
 
           <div className="booking-summary-pricing">
-            {selectedRooms.map((room) => (
-              <div className="booking-summary-row" key={room.id}>
-                <span>{room.name} x{room.quantity}</span>
-                <strong>{formatCurrency(room.priceValue * room.quantity)}</strong>
+            {safeSelectedRooms.map((room, index) => (
+              <div className="booking-summary-row" key={room.id || `${room.name || "room"}-${index}`}>
+                <span>{room.name || "Room"} x{room.quantity || 0}</span>
+                <strong>{formatCurrency((Number(room.priceValue) || 0) * (Number(room.quantity) || 0))}</strong>
               </div>
             ))}
             <div className="booking-summary-row">
               <span>Total Rooms</span>
-              <strong>{totalRooms}</strong>
+              <strong>{computedTotalRooms}</strong>
             </div>
             <div className="booking-summary-row">
               <span>Total Guests</span>
-              <strong>{totalGuests}</strong>
+              <strong>{computedTotalGuests}</strong>
             </div>
             <div className="booking-summary-total">
               <span>Total price</span>
-              <strong>{formatCurrency(totalPrice)}</strong>
+              <strong>{formatCurrency(computedTotalPrice)}</strong>
             </div>
           </div>
         </aside>
