@@ -1,6 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useRef , useEffect } from "react";
 import PopularHotels from "../components/PopularHotels";
-import { popularDestinations } from "../data/hotels";
 import "../App.css";
 
 function CalendarIcon() {
@@ -34,6 +33,9 @@ function Home() {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [popularDestinations, setPopularDestinations] = useState([]);
+  const [hotels, setHotels] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [destinationQuery, setDestinationQuery] = useState("");
   const [isDestinationMenuOpen, setIsDestinationMenuOpen] = useState(false);
   const [destinationMessage, setDestinationMessage] = useState("");
@@ -43,6 +45,23 @@ function Home() {
   const checkInRef = useRef(null);
   const checkOutRef = useRef(null);
   const highlightTimeoutRef = useRef(null);
+  useEffect(() => {
+  const fetchHomeData = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/home");
+      const data = await response.json();
+
+      setHotels(data.hotels);
+      setPopularDestinations(data.popularDestinations);
+    } catch (error) {
+      console.error("Failed to load homepage:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchHomeData();
+}, []);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -414,10 +433,13 @@ return (
         </div>
       </section>
 
-      <PopularHotels
-        highlightedDestination={highlightedDestination}
-        highlightedHotelId={highlightedHotelId}
-      />
+    {!loading && (
+  <PopularHotels
+    popularDestinations={popularDestinations}
+    highlightedDestination={highlightedDestination}
+    highlightedHotelId={highlightedHotelId}
+  />
+)}
     </div>
 
   );

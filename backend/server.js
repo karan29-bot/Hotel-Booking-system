@@ -85,6 +85,71 @@ catch (err) {
       res.status(500).json({ error: "An error occurred while logging in" });
     }
   });
+
+  app.get("/api/hotels", async (req, res) => {
+  try {
+    const hotels = await pool.query(`
+      SELECT *
+      FROM hotels
+      ORDER BY city, name
+    `);
+
+    res.json(hotels.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({
+      error: "Failed to fetch hotels",
+    });
+  }
+});
+
+app.get("/api/home", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT *
+      FROM hotels
+      ORDER BY city, name
+    `);
+
+    const hotels = result.rows;
+
+    const popularDestinations = hotels.reduce((destinations, hotel) => {
+      const existingDestination = destinations.find(
+        (destination) => destination.city === hotel.city
+      );
+
+      const destinationHotel = {
+        id: hotel.id,
+        name: hotel.name,
+        city: hotel.city,
+        rating: Number(hotel.rating),
+        price: hotel.price_per_night,
+        image: hotel.image,
+      };
+
+      if (existingDestination) {
+        existingDestination.hotels.push(destinationHotel);
+      } else {
+        destinations.push({
+          city: hotel.city,
+          hotels: [destinationHotel],
+        });
+      }
+
+      return destinations;
+    }, []);
+
+    res.json({
+      hotels,
+      popularDestinations,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      error: "Failed to load homepage data",
+    });
+  }
+});
   
   app.post("/api/bookings", verifyToken, async (req, res) => {
   try {

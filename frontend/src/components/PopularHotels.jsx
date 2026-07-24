@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HotelCard from "./HotelCard";
-import { popularDestinations } from "../data/hotels";
 import "./PopularHotels.css";
 
 const getDestinationId = (city) =>
@@ -20,7 +19,11 @@ const cityBanners = {
 // fallback if a city isn't in the map above
 const defaultBanner = "https://images.unsplash.com/photo-1519677100203-a0e668c92439?auto=format&fit=crop&w=1600&q=80";
 
-function PopularHotels({ highlightedDestination = "", highlightedHotelId = "" }) {
+function PopularHotels({
+  popularDestinations = [],
+  highlightedDestination = "",
+  highlightedHotelId = "",
+}){
   const navigate = useNavigate();
   const sliderRefs = useRef({});
   const [isExpanded, setIsExpanded] = useState(false);
