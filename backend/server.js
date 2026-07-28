@@ -150,7 +150,35 @@ app.get("/api/home", async (req, res) => {
     });
   }
 });
-  
+  app.get("/api/hotels/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      `SELECT
+         id, name, city, country, description, image, rating,
+         price_per_night AS price,
+         amenities, highlights, rooms
+       FROM hotels
+       WHERE id = $1`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Hotel not found" });
+    }
+    const hotel = result.rows[0];
+    hotel.rating = Number(hotel.rating);
+    res.json(hotel);
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({
+      error: "Failed to fetch hotel",
+    });
+  }
+});
   app.post("/api/bookings", verifyToken, async (req, res) => {
   try {
     const {

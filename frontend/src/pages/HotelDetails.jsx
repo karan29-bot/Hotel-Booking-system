@@ -1,8 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./styles/hotelDetails.css";
-
-import { hotels } from "../data/hotels";
 
 const formatCurrency = (amount) => `₹${amount.toLocaleString("en-IN")}`;
 
@@ -10,8 +8,33 @@ function HotelDetails() {
   const { hotelId } = useParams();
   const navigate = useNavigate();
   const [roomQuantities, setRoomQuantities] = useState({});
+  const [currentHotel, setCurrentHotel] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const currentHotel = hotels.find((hotel) => hotel.id === hotelId);
+  useEffect(() => {
+    const fetchHotel = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/hotels/${hotelId}`);
+        if (response.status === 404) {
+          setCurrentHotel(null);
+          return;
+        }
+        const data = await response.json();
+        setCurrentHotel(data);
+      } catch (error) {
+        console.error(error);
+        setCurrentHotel(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHotel();
+  }, [hotelId]);
+
+  if (loading) {
+    return null;
+  }
 
   if (!currentHotel) {
     return (
