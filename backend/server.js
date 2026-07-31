@@ -7,6 +7,7 @@ const pool = require("./db");
 const cors = require("cors");
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const verifyAdmin = require("./middleware/verifyAdmin");
 
 const app = express();
 
@@ -46,6 +47,7 @@ catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "An error occurred while creating the user" });
   } })
+  
 
   app.post("/login", async (req, res) => {
     const { email, password } = req.body;
@@ -85,6 +87,44 @@ catch (err) {
       res.status(500).json({ error: "An error occurred while logging in" });
     }
   });
+  app.post("/admin/login", async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const admin = await pool.query(
+      "SELECT * FROM admins WHERE email = $1",
+      [email]
+    );
+
+    const validPassword =
+      admin.rows.length > 0 &&
+      (await bcrypt.compare(password, admin.rows[0].password));
+
+    if (admin.rows.length > 0 && validPassword) {
+      const token = jwt.sign(
+        {
+          id: admin.rows[0].id,
+          email: admin.rows[0].email,
+          role: "admin",
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "4h" }
+      );
+      res.json({
+        token,
+        admin: {
+          id: admin.rows[0].id,
+          name: admin.rows[0].name,
+          email: admin.rows[0].email,
+        },
+      });
+    } else {
+      res.status(401).json({ error: "Invalid email or password" });
+    }
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "An error occurred while logging in" });
+  }
+});
 
   app.get("/api/hotels", async (req, res) => {
   try {
