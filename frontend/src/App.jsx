@@ -10,6 +10,7 @@ import HotelDetails from "./pages/HotelDetails";
 import AdminLogin from "./pages/AdminLogin";
 import AdminLayout from "./pages/AdminLayout";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminHotels from "./pages/AdminHotels";
 
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/admin" element={<AdminLayout />}>
         <Route path= "dashboard" element={<AdminDashboard />} />
+        <Route path="hotels" element={<AdminHotels />} />
       </Route>
     </Routes>
   );
