@@ -11,6 +11,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminLayout from "./pages/AdminLayout";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminHotels from "./pages/AdminHotels";
+import AdminCustomers from "./pages/AdminCustomers";
 
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
       <Route path="/admin" element={<AdminLayout />}>
         <Route path= "dashboard" element={<AdminDashboard />} />
         <Route path="hotels" element={<AdminHotels />} />
+        <Route path="customers" element={<AdminCustomers />} />
       </Route>
     </Routes>
   );

@@ -445,7 +445,54 @@ app.get("/api/home", async (req, res) => {
     });
   }
 });
+// GET all customers/bookings (admin)
+app.get("/api/admin/customers", verifyAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT *
+      FROM hotel_bookings
+      ORDER BY check_in DESC
+    `);
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const customers = result.rows.map((booking) => {
+      const checkIn = new Date(booking.check_in);
+      const checkOut = new Date(booking.check_out);
+
+      let status = "Reserved";
+      if (today >= checkIn && today <= checkOut) {
+        status = "Checked In";
+      } else if (today > checkOut) {
+        status = "Checked Out";
+      }
+
+      return {
+        id: booking.id,
+        name: `${booking.guest_first_name} ${booking.guest_last_name}`,
+        email: booking.guest_email,
+        phone: booking.guest_phone,
+        country: booking.country,
+        hotelName: booking.hotel_name,
+        hotelCity: booking.hotel_city,
+        checkIn: booking.check_in,
+        checkOut: booking.check_out,
+        totalRooms: booking.total_rooms,
+        totalGuests: booking.total_guests,
+        totalPrice: booking.total_price,
+        selectedRooms: booking.selected_rooms,
+        specialRequests: booking.special_requests,
+        status,
+      };
+    });
+
+    res.json(customers);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Failed to fetch customers" });
+  }
+});
 app.listen(5000, () => {
 
   console.log("Server is running on port 5000");
