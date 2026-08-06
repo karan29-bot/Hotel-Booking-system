@@ -493,6 +493,72 @@ app.get("/api/admin/customers", verifyAdmin, async (req, res) => {
     res.status(500).json({ error: "Failed to fetch customers" });
   }
 });
+
+app.get("/api/admin/overview", verifyAdmin, async (req, res) => {
+  try {
+    const bookingsResult = await pool.query(`SELECT * FROM hotel_bookings`);
+    const bookings = bookingsResult.rows;
+
+    const hotelsResult = await pool.query(`SELECT rating, total_rooms, available_rooms, name FROM hotels`);
+    const hotels = hotelsResult.rows;
+
+    const totalBookings = bookings.length;
+    const uniqueGuests = new Set(bookings.map((b) => b.guest_email)).size;
+    const totalRevenue = bookings.reduce((sum, b) => sum + Number(b.total_price), 0);
+    const avgRating = hotels.length
+      ? (hotels.reduce((sum, h) => sum + Number(h.rating), 0) / hotels.length).toFixed(2)
+      : 0;
+
+    // Monthly booking trend (count + revenue) based on check_in month
+    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const monthlyData = monthNames.map((month) => ({ month, bookings: 0, revenue: 0 }));
+
+    bookings.forEach((b) => {
+      const monthIndex = new Date(b.check_in).getMonth();
+      monthlyData[monthIndex].bookings += 1;
+      monthlyData[monthIndex].revenue += Number(b.total_price);
+    });
+
+    // Overall occupancy per hotel (not weekly, since we don't track daily occupancy history)
+    const occupancyByHotel = hotels.map((h) => ({
+      name: h.name,
+      occupancyPercent: h.total_rooms
+        ? Math.round(((h.total_rooms - h.available_rooms) / h.total_rooms) * 100)
+        : 0,
+    }));
+
+    // Upcoming check-ins (next 7 days from today)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const weekFromNow = new Date(today);
+    weekFromNow.setDate(weekFromNow.getDate() + 7);
+
+    const upcomingCheckIns = bookings
+      .filter((b) => {
+        const checkIn = new Date(b.check_in);
+        return checkIn >= today && checkIn <= weekFromNow;
+      })
+      .map((b) => ({
+        name: `${b.guest_first_name} ${b.guest_last_name}`,
+        hotel: b.hotel_name,
+        checkIn: b.check_in,
+      }))
+      .sort((a, b) => new Date(a.checkIn) - new Date(b.checkIn));
+
+    res.json({
+      totalBookings,
+      uniqueGuests,
+      totalRevenue,
+      avgRating: Number(avgRating),
+      monthlyData,
+      occupancyByHotel,
+      upcomingCheckIns,
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Failed to load overview data" });
+  }
+});
 app.listen(5000, () => {
 
   console.log("Server is running on port 5000");
