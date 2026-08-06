@@ -1,11 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./styles/userprofile.css";
 
-// Placeholder data — replace with a real fetch to your Express backend
-const dummyBookings = [
-  { id: 1, hotelName: "The Leela Palace", location: "Old Airport Road, Bangalore", checkIn: "2026-08-10", checkOut: "2026-08-12", status: "Upcoming" },
-  { id: 2, hotelName: "Taj West End", location: "Race Course Road, Bangalore", checkIn: "2026-05-02", checkOut: "2026-05-04", status: "Completed" },
-];
+function formatBookingDate(value) {
+  if (!value) return "—";
+  return new Date(value).toLocaleDateString();
+}
 
 function ProfilePage() {
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -22,6 +21,44 @@ function ProfilePage() {
   });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [bookings, setBookings] = useState([]);
+  const [bookingsLoading, setBookingsLoading] = useState(true);
+  const [bookingsError, setBookingsError] = useState("");
+  const [reviewedBookingIds, setReviewedBookingIds] = useState([]);
+  const [activeReviewBookingId, setActiveReviewBookingId] = useState(null);
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setBookings([]);
+        setBookingsLoading(false);
+        setBookingsError("Please log in to view your bookings.");
+        return;
+      }
+
+      try {
+        const res = await fetch("http://localhost:5000/api/bookings/mine", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to load bookings");
+        }
+
+        const data = await res.json();
+        setBookings(data);
+      } catch (err) {
+        setBookingsError(err.message || "Something went wrong while loading bookings.");
+      } finally {
+        setBookingsLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, []);
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
@@ -169,27 +206,155 @@ function ProfilePage() {
 
           {activeTab === "bookings" && (
             <div className="profile-bookings">
-              {dummyBookings.length === 0 ? (
+              {bookingsLoading ? (
+                <p className="profile-empty">Loading bookings...</p>
+              ) : bookingsError ? (
+                <p className="profile-empty">{bookingsError}</p>
+              ) : bookings.length === 0 ? (
                 <p className="profile-empty">No bookings yet.</p>
               ) : (
-                dummyBookings.map((b) => (
-                  <div key={b.id} className="booking-card">
-                    <div>
-                      <h3>{b.hotelName}</h3>
-                      <p className="booking-location">{b.location}</p>
-                      <p className="booking-dates">{b.checkIn} → {b.checkOut}</p>
+                bookings.map((booking) => {
+                  const checkoutDate = new Date(booking.check_out);
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  checkoutDate.setHours(0, 0, 0, 0);
+                  const isPast = checkoutDate < today;
+                  const status = isPast ? "Completed" : "Upcoming";
+                  const hasReviewed = reviewedBookingIds.includes(booking.id);
+                  const isReviewing = activeReviewBookingId === booking.id;
+
+                  return (
+                    <div key={booking.id} className="booking-card">
+                      <div>
+                        <h3>{booking.hotel_name}</h3>
+                        <p className="booking-location">{booking.hotel_city}</p>
+                        <p className="booking-dates">
+                          {formatBookingDate(booking.check_in)} → {formatBookingDate(booking.check_out)}
+                        </p>
+                        {isReviewing && (
+                          <ReviewInlineForm
+                            booking={booking}
+                            onDone={() => {
+                              setReviewedBookingIds((prev) =>
+                                prev.includes(booking.id) ? prev : [...prev, booking.id]
+                              );
+                              setActiveReviewBookingId(null);
+                            }}
+                            onCancel={() => setActiveReviewBookingId(null)}
+                          />
+                        )}
+                        {hasReviewed && !isReviewing && (
+                          <p className="profile-message" style={{ marginTop: "8px" }}>
+                            ✓ Review submitted
+                          </p>
+                        )}
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        <span className={`booking-status booking-status--${status.toLowerCase()}`}>
+                          {status}
+                        </span>
+                        {isPast && !hasReviewed && !isReviewing && (
+                          <button
+                            type="button"
+                            className="profile-save-btn"
+                            onClick={() => setActiveReviewBookingId(booking.id)}
+                          >
+                            Leave a Review
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <span className={`booking-status booking-status--${b.status.toLowerCase()}`}>
-                      {b.status}
-                    </span>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           )}
         </div>
       </div>
     </div>
+  );
+}
+
+function ReviewInlineForm({ booking, onDone, onCancel }) {
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSubmitting(true);
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("Please log in to leave a review.");
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:5000/api/reviews", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          hotelId: booking.hotel_id,
+          hotelName: booking.hotel_name,
+          rating,
+          comment,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to submit review");
+      }
+
+      setComment("");
+      onDone();
+    } catch (err) {
+      setError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "12px", maxWidth: "320px" }}>
+      <label className="profile-field" style={{ marginBottom: 0 }}>
+        <span>Rating</span>
+        <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
+          {[5, 4, 3, 2, 1].map((value) => (
+            <option key={value} value={value}>
+              {value} Star{value > 1 ? "s" : ""}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="profile-field" style={{ marginBottom: 0 }}>
+        <span>Comment</span>
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          rows={3}
+          placeholder="Share your experience..."
+          required
+          style={{ minHeight: "80px", padding: "8px", borderRadius: "8px", border: "1px solid #d5d5d5" }}
+        />
+      </label>
+      {error && <p className="profile-message">{error}</p>}
+      <div style={{ display: "flex", gap: "8px" }}>
+        <button type="submit" className="profile-save-btn" disabled={submitting}>
+          {submitting ? "Submitting..." : "Submit"}
+        </button>
+        <button type="button" className="profile-save-btn" onClick={onCancel} style={{ background: "#f1f1f1", color: "#333", border: "1px solid #ddd" }}>
+          Cancel
+        </button>
+      </div>
+    </form>
   );
 }
 

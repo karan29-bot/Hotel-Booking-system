@@ -12,7 +12,7 @@ import AdminLayout from "./pages/AdminLayout";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminHotels from "./pages/AdminHotels";
 import AdminCustomers from "./pages/AdminCustomers";
-
+import AdminFeedback from "./pages/AdminFeedback";
 
 function App() {
   return (
@@ -28,6 +28,7 @@ function App() {
         <Route path= "dashboard" element={<AdminDashboard />} />
         <Route path="hotels" element={<AdminHotels />} />
         <Route path="customers" element={<AdminCustomers />} />
+        <Route path="feedback" element={<AdminFeedback />} />
       </Route>
     </Routes>
   );

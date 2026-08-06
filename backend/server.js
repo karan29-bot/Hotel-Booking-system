@@ -107,7 +107,7 @@ catch (err) {
           role: "admin",
         },
         process.env.JWT_SECRET,
-        { expiresIn: "4h" }
+        { expiresIn: "7d" }
       );
       res.json({
         token,
@@ -445,6 +445,21 @@ app.get("/api/home", async (req, res) => {
     });
   }
 });
+
+app.get("/api/bookings/mine", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const result = await pool.query(
+      `SELECT * FROM hotel_bookings WHERE user_id = $1 ORDER BY check_in DESC`,
+      [userId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Failed to fetch bookings" });
+  }
+});
+
 // GET all customers/bookings (admin)
 app.get("/api/admin/customers", verifyAdmin, async (req, res) => {
   try {
@@ -557,6 +572,67 @@ app.get("/api/admin/overview", verifyAdmin, async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "Failed to load overview data" });
+  }
+});
+
+function getSentiment(rating) {
+  if (rating >= 4) return "Positive sentiment";
+  if (rating === 3) return "Neutral sentiment";
+  return "Negative sentiment";
+}
+
+// Customer submits a review
+app.post("/api/reviews", verifyToken, async (req, res) => {
+  const { hotelId, hotelName, rating, comment } = req.body;
+  const userId = req.user.id;
+
+  try {
+    const userResult = await pool.query("SELECT name FROM users WHERE id = $1", [userId]);
+    const guestName = userResult.rows[0]?.name || "Guest";
+
+    const newReview = await pool.query(
+      `INSERT INTO reviews (user_id, hotel_id, hotel_name, guest_name, rating, comment)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING *`,
+      [userId, hotelId, hotelName, guestName, rating, comment]
+    );
+
+    res.status(201).json(newReview.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Failed to submit review" });
+  }
+});
+
+// Admin: get all feedback
+app.get("/api/admin/feedback", verifyAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(`SELECT * FROM reviews ORDER BY created_at DESC`);
+    const reviews = result.rows;
+
+    const avgRating = reviews.length
+      ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+      : 0;
+
+    const distribution = [5, 4, 3, 2, 1].map((star) => ({
+      star,
+      count: reviews.filter((r) => r.rating === star).length,
+    }));
+
+    const recentReviews = reviews.map((r) => ({
+      id: r.id,
+      guestName: r.guest_name,
+      hotelName: r.hotel_name,
+      rating: r.rating,
+      comment: r.comment,
+      date: r.created_at,
+      sentiment: getSentiment(r.rating),
+    }));
+
+    res.json({ avgRating: Number(avgRating), distribution, recentReviews });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Failed to load feedback" });
   }
 });
 app.listen(5000, () => {

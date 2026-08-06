@@ -149,7 +149,6 @@ function HotelDetails() {
               ))}
             </div>
           </section>
-
           <section className="detail-section">
             <h2>Available Rooms</h2>
             <div className="rooms-grid">
@@ -278,5 +277,4 @@ function HotelDetails() {
     </div>
   );
 }
-
 export default HotelDetails;
