@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import "./styles/userprofile.css";
 
 function formatBookingDate(value) {
@@ -8,8 +9,9 @@ function formatBookingDate(value) {
 
 function ProfilePage() {
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-
-  const [activeTab, setActiveTab] = useState("account");
+  const location = useLocation();
+  const initialTab = new URLSearchParams(location.search).get("tab") === "bookings" ? "bookings" : "account";
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [avatarPreview, setAvatarPreview] = useState(storedUser.avatar || null);
   const [form, setForm] = useState({
     name: storedUser.name || "",

@@ -14,6 +14,8 @@ import AdminHotels from "./pages/AdminHotels";
 import AdminCustomers from "./pages/AdminCustomers";
 import AdminFeedback from "./pages/AdminFeedback";
 import AdminSchedule from "./pages/AdminSchedule";
+import Payment from "./pages/Payment";
+import BookingConfirmation from "./pages/BookingConfirmation";
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/booking/:hotelId" element={<Booking />} />
       <Route path="/hotel/:hotelId" element={<HotelDetails />} />
+      <Route path="/payment" element={<Payment />} />
+      <Route path="/booking-confirmation" element={<BookingConfirmation />} />
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/admin" element={<AdminLayout />}>
         <Route path= "dashboard" element={<AdminDashboard />} />
@@ -31,6 +35,7 @@ function App() {
         <Route path="customers" element={<AdminCustomers />} />
         <Route path="feedback" element={<AdminFeedback />} />
         <Route path="schedule" element={<AdminSchedule />} />
+        
       </Route>
     </Routes>
   );

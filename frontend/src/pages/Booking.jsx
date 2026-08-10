@@ -63,7 +63,7 @@ function Booking() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
 
     if (!safeHotel || safeSelectedRooms.length === 0) {
@@ -89,47 +89,7 @@ function Booking() {
       checkOut,
     };
 
-    try {
-      const token = localStorage.getItem("token");
-      console.log("[booking] token debug before submit:", {
-        tokenExists: Boolean(token),
-        tokenParts: token?.split(".").length || 0,
-        tokenPreview: token ? `${token.slice(0, 16)}...${token.slice(-16)}` : null,
-      });
-
-      if (!token) {
-        setMessage("Please log in again before confirming your booking.");
-        return;
-      }
-
-      const authorizationHeader = `Bearer ${token}`;
-      console.log("[booking] Authorization header debug:", {
-        startsWithBearer: authorizationHeader.startsWith("Bearer "),
-        parts: authorizationHeader.split(" ").length,
-      });
-
-      const response = await fetch("http://localhost:5000/api/bookings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: authorizationHeader,
-        },
-        body: JSON.stringify(bookingData),
-      });
-
-      const data = await response.json().catch(() => ({}));
-
-      if (response.ok) {
-        console.log("Booking saved:", data);
-        setMessage("Booking confirmed successfully!");
-      } else {
-        console.error("Booking failed:", data);
-        setMessage(data.error || "Booking failed.");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      setMessage("Server error. Please try again.");
-    }
+    navigate("/payment", { state: { bookingData } });
   };
 
   if (!location.state || !safeHotel) {
@@ -244,7 +204,7 @@ function Booking() {
             </div>
 
             <button type="submit" className="booking-btn">
-              Confirm Booking
+              Proceed to Payment
             </button>
 
             {message && <p className="booking-message">{message}</p>}

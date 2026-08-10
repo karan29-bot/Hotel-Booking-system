@@ -212,14 +212,14 @@ return (
           {isAuthenticated && (
             <>
               <li>
-                <button
-                  type="button"
-                  className="navbar-link"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  My Bookings
-                </button>
-              </li>
+  <Link
+    to="/profile?tab=bookings"
+    className="navbar-link"
+    onClick={() => setMenuOpen(false)}
+  >
+    My Bookings
+  </Link>
+</li>
               <li>
                 <Link to="/profile" className="navbar-link" onClick={() => setMenuOpen(false)}>
                   Profile
