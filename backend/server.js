@@ -1,4 +1,3 @@
-
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, ".env"), override: true });
 const verifyToken = require("./middleware/auth");
@@ -69,7 +68,7 @@ catch (err) {
             email: user.rows[0].email,
           },
           process.env.JWT_SECRET,
-          { expiresIn: "1h" }
+          { expiresIn: "7d" }
           
         );
         console.log("[login] issued token debug:", {
@@ -188,6 +187,15 @@ function slugify(text) {
     .replace(/(^-|-$)/g, "");
 }
 
+function normalizeCity(city) {
+  return city
+    .trim()
+    .toLowerCase()
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 async function generateUniqueHotelId(name, city) {
   const baseSlug = slugify(`${name}-${city}`);
   let slug = baseSlug;
@@ -214,13 +222,14 @@ app.get("/api/admin/hotels", verifyAdmin, async (req, res) => {
 
 // CREATE hotel
 app.post("/api/admin/hotels", verifyAdmin, async (req, res) => {
-  const {
+  let {
     name, city, country, description, image,
     rating, totalRooms, availableRooms,
     amenities, highlights, roomInputs,
   } = req.body;
 
   try {
+    city = normalizeCity(city);
     const id = await generateUniqueHotelId(name, city);
     const rooms = buildRooms(id, roomInputs);
 
@@ -248,13 +257,14 @@ app.post("/api/admin/hotels", verifyAdmin, async (req, res) => {
 // UPDATE hotel
 app.put("/api/admin/hotels/:id", verifyAdmin, async (req, res) => {
   const { id } = req.params;
-  const {
+  let {
     name, city, country, description, image,
     rating, totalRooms, availableRooms,
     amenities, highlights, roomInputs,
   } = req.body;
 
   try {
+    city = normalizeCity(city);
     const rooms = buildRooms(id, roomInputs);
 
     const result = await pool.query(
@@ -310,7 +320,7 @@ app.get("/api/home", async (req, res) => {
 
     const popularDestinations = hotels.reduce((destinations, hotel) => {
       const existingDestination = destinations.find(
-        (destination) => destination.city === hotel.city
+        (destination) => destination.city.toLowerCase() === hotel.city.toLowerCase()
       );
 
       const destinationHotel = {
@@ -365,8 +375,6 @@ app.get("/api/home", async (req, res) => {
     const hotel = result.rows[0];
     hotel.rating = Number(hotel.rating);
     res.json(hotel);
-
-    res.json(result.rows[0]);
   } catch (err) {
     console.error(err.message);
     res.status(500).json({
@@ -692,6 +700,7 @@ app.get("/api/admin/schedule", verifyAdmin, async (req, res) => {
     res.status(500).json({ error: "Failed to load schedule" });
   }
 });
+
 app.listen(5000, () => {
 
   console.log("Server is running on port 5000");
