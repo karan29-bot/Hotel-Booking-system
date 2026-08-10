@@ -1,0 +1,250 @@
+.admin-schedule-page {
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.admin-schedule-page h1 {
+  font-size: 24px;
+  margin: 0 0 4px;
+  color: #1a1a1a;
+}
+
+.admin-schedule-subtitle {
+  color: #8a8a8a;
+  font-size: 13px;
+  margin: 0 0 24px;
+}
+
+.admin-schedule-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 20px;
+}
+
+.admin-calendar-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px 24px;
+}
+
+.admin-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.admin-calendar-header h2 {
+  font-size: 16px;
+  margin: 0;
+  color: #1a1a1a;
+}
+
+.admin-calendar-header button {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #8a8a8a;
+  padding: 4px 10px;
+}
+
+.admin-calendar-header button:hover {
+  color: #a5490f;
+}
+
+.admin-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.admin-calendar-weekdays {
+  margin-bottom: 6px;
+  text-align: center;
+  font-size: 11px;
+  color: #8a8a8a;
+  font-weight: 600;
+}
+
+.admin-calendar-cell {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 13px;
+  color: #3a3a3a;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.admin-calendar-cell--blank {
+  cursor: default;
+}
+
+.admin-calendar-cell:hover:not(.admin-calendar-cell--blank) {
+  background: #f5efe4;
+}
+
+.admin-calendar-cell--peak {
+  background: #f7ded2;
+}
+
+.admin-calendar-cell--busy {
+  background: #fbeadb;
+}
+
+.admin-calendar-cell--light {
+  background: #e6efe8;
+}
+
+.admin-calendar-cell--selected {
+  border-color: #a5490f;
+}
+
+.admin-calendar-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #a5490f;
+}
+
+.admin-calendar-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+  font-size: 12px;
+  color: #6b6b6b;
+}
+
+.admin-calendar-legend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.admin-legend-dot--peak { background: #c0392b; }
+.admin-legend-dot--busy { background: #d98c3f; }
+.admin-legend-dot--light { background: #4a8c63; }
+.admin-legend-dot--none { background: #ccc; }
+
+.admin-schedule-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-day-summary-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.admin-day-summary-card--empty {
+  color: #8a8a8a;
+  font-size: 13px;
+  text-align: center;
+  padding: 32px 20px;
+}
+
+.admin-day-summary-date {
+  font-size: 13px;
+  color: #8a8a8a;
+  margin: 0 0 8px;
+}
+
+.admin-day-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+
+.admin-day-badge--peak { background: #f7ded2; color: #c0392b; }
+.admin-day-badge--busy { background: #fbeadb; color: #a5590f; }
+.admin-day-badge--light { background: #e6efe8; color: #2e7d4f; }
+
+.admin-day-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.admin-day-stat strong {
+  font-size: 18px;
+}
+
+.admin-day-stat--in {
+  background: #e6efe8;
+  color: #2e7d4f;
+}
+
+.admin-day-stat--out {
+  background: #f7e3e0;
+  color: #b5432f;
+}
+
+.admin-upcoming-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.admin-upcoming-card h3 {
+  font-size: 14px;
+  margin: 0 0 12px;
+  color: #1a1a1a;
+}
+
+.admin-upcoming-empty {
+  color: #8a8a8a;
+  font-size: 13px;
+}
+
+.admin-upcoming-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-upcoming-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.admin-upcoming-list .admin-legend-dot {
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.admin-upcoming-date {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+  color: #1a1a1a;
+}
+
+.admin-upcoming-detail {
+  font-size: 12px;
+  color: #8a8a8a;
+  margin: 2px 0 0;
+}

@@ -635,6 +635,63 @@ app.get("/api/admin/feedback", verifyAdmin, async (req, res) => {
     res.status(500).json({ error: "Failed to load feedback" });
   }
 });
+
+app.get("/api/admin/schedule", verifyAdmin, async (req, res) => {
+  const { month, year } = req.query; // e.g. month=8, year=2026 (1-indexed month)
+
+  try {
+    const result = await pool.query(`SELECT * FROM hotel_bookings`);
+    const bookings = result.rows;
+
+    const targetMonth = Number(month) - 1; // JS Date months are 0-indexed
+    const targetYear = Number(year);
+
+    const daysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+
+    const dayData = {};
+    for (let d = 1; d <= daysInMonth; d++) {
+      dayData[d] = { checkIns: 0, checkOuts: 0, events: [] };
+    }
+
+    bookings.forEach((b) => {
+      const checkIn = new Date(b.check_in);
+      const checkOut = new Date(b.check_out);
+
+      if (checkIn.getFullYear() === targetYear && checkIn.getMonth() === targetMonth) {
+        const d = checkIn.getDate();
+        dayData[d].checkIns += 1;
+        dayData[d].events.push({ type: "check-in", hotel: b.hotel_name, guest: `${b.guest_first_name} ${b.guest_last_name}` });
+      }
+
+      if (checkOut.getFullYear() === targetYear && checkOut.getMonth() === targetMonth) {
+        const d = checkOut.getDate();
+        dayData[d].checkOuts += 1;
+        dayData[d].events.push({ type: "check-out", hotel: b.hotel_name, guest: `${b.guest_first_name} ${b.guest_last_name}` });
+      }
+    });
+
+    const days = Object.entries(dayData).map(([day, data]) => {
+      const total = data.checkIns + data.checkOuts;
+      let intensity = "none";
+      if (total >= 5) intensity = "peak";
+      else if (total >= 2) intensity = "busy";
+      else if (total >= 1) intensity = "light";
+
+      return {
+        day: Number(day),
+        checkIns: data.checkIns,
+        checkOuts: data.checkOuts,
+        intensity,
+        events: data.events,
+      };
+    });
+
+    res.json({ month: targetMonth + 1, year: targetYear, daysInMonth, days });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Failed to load schedule" });
+  }
+});
 app.listen(5000, () => {
 
   console.log("Server is running on port 5000");
