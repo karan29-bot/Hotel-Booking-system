@@ -86,7 +86,7 @@ function ProfilePage() {
     try {
       // TODO: replace with your real endpoint, e.g. PUT /api/users/:id
       const token = localStorage.getItem("token");
-      const res = await fetch("/api/users/me", {
+      const res = await fetch("http://localhost:5000/api/users/me", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

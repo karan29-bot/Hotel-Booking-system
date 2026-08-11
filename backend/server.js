@@ -86,6 +86,42 @@ catch (err) {
       res.status(500).json({ error: "An error occurred while logging in" });
     }
   });
+  app.put("/api/users/me", verifyToken, async (req, res) => {
+  const { name, email, phone, gender, password } = req.body;
+  const userId = req.user.id;
+
+  try {
+    let updatedUser;
+
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updatedUser = await pool.query(
+        `UPDATE users
+         SET name = $1, email = $2, phone = $3, gender = $4, password = $5
+         WHERE id = $6
+         RETURNING id, name, email, phone, gender`,
+        [name, email, phone, gender, hashedPassword, userId]
+      );
+    } else {
+      updatedUser = await pool.query(
+        `UPDATE users
+         SET name = $1, email = $2, phone = $3, gender = $4
+         WHERE id = $5
+         RETURNING id, name, email, phone, gender`,
+        [name, email, phone, gender, userId]
+      );
+    }
+
+    if (updatedUser.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json(updatedUser.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+});
   app.post("/admin/login", async (req, res) => {
   const { email, password } = req.body;
   try {
