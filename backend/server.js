@@ -44,9 +44,11 @@ app.post("/signup", async (req, res) => {
   }
 catch (err) {
     console.error(err.message);
+    if (err.code === "23505") {
+      return res.status(409).json({ error: "An account with this email already exists." });
+    }
     res.status(500).json({ error: "An error occurred while creating the user" });
   } })
-  
 
   app.post("/login", async (req, res) => {
     const { email, password } = req.body;

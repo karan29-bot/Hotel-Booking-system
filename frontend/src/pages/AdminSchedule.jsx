@@ -50,9 +50,18 @@ function AdminSchedule() {
   const leadingBlanks = Array.from({ length: firstWeekday });
   const selected = selectedDay ? data.days.find((d) => d.day === selectedDay) : null;
 
-  const upcomingEvents = data.days
-    .filter((d) => d.events.length > 0)
-    .slice(0, 6);
+ const todayDate = new Date();
+todayDate.setHours(0, 0, 0, 0);
+const isCurrentMonth = todayDate.getFullYear() === year && todayDate.getMonth() + 1 === month;
+const todayDayNum = todayDate.getDate();
+
+const upcomingEvents = data.days
+  .filter((d) => {
+    if (d.events.length === 0) return false;
+    if (!isCurrentMonth) return true; // viewing a future month entirely — all days qualify
+    return d.day >= todayDayNum; // viewing current month — only today or later
+  })
+  .slice(0, 6);
 
   return (
     <div className="admin-schedule-page">

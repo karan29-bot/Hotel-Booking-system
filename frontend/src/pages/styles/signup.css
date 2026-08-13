@@ -177,3 +177,9 @@
     font-size: 1.3rem;
   }
 }
+
+.signup-error {
+  color: #c0392b;
+  font-size: 13px;
+  margin: -4px 0 4px;
+}
