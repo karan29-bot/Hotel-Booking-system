@@ -21,7 +21,7 @@ function Booking() {
 
   const safeStoredUser = storedUser && typeof storedUser === "object" ? storedUser : {};
   const bookingState = location.state || {};
-  const { hotel, selectedRooms, totalPrice, totalRooms, totalGuests } = bookingState;
+  const { hotel, selectedRooms, totalRooms, totalGuests } = bookingState;
   const safeHotel = hotel && typeof hotel === "object" ? hotel : null;
   const safeSelectedRooms = Array.isArray(selectedRooms) ? selectedRooms : [];
 
@@ -34,12 +34,6 @@ function Booking() {
         (sum, room) => sum + ((Number(room?.guestCount) || 0) * (Number(room?.quantity) || 0)),
         0,
       );
-  const computedTotalPrice = typeof totalPrice === "number"
-    ? totalPrice
-    : safeSelectedRooms.reduce(
-        (sum, room) => sum + ((Number(room?.priceValue) || 0) * (Number(room?.quantity) || 0)),
-        0,
-      );
 
   const today = new Date().toISOString().split("T")[0];
   const tomorrowDate = new Date();
@@ -49,6 +43,20 @@ function Booking() {
   const [checkIn, setCheckIn] = useState(today);
   const [checkOut, setCheckOut] = useState(tomorrow);
   const [message, setMessage] = useState("");
+
+  // Nights is derived live from checkIn/checkOut, minimum 1 night.
+  const nights = Math.max(
+    1,
+    Math.round((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24))
+  );
+
+  const perNightPrice = safeSelectedRooms.reduce(
+    (sum, room) => sum + ((Number(room?.priceValue) || 0) * (Number(room?.quantity) || 0)),
+    0,
+  );
+
+  const computedTotalPrice = perNightPrice * nights;
+
   const [form, setForm] = useState({
     firstName: safeStoredUser.name ? safeStoredUser.name.split(" ")[0] : "",
     lastName: safeStoredUser.name ? safeStoredUser.name.split(" ").slice(1).join(" ") : "",
@@ -77,6 +85,7 @@ function Booking() {
       totalRooms: computedTotalRooms,
       totalGuests: computedTotalGuests,
       totalPrice: computedTotalPrice,
+      nights,
       guestDetails: {
         firstName: form.firstName,
         lastName: form.lastName,
@@ -264,8 +273,8 @@ function Booking() {
           <div className="booking-summary-pricing">
             {safeSelectedRooms.map((room, index) => (
               <div className="booking-summary-row" key={room.id || `${room.name || "room"}-${index}`}>
-                <span>{room.name || "Room"} x{room.quantity || 0}</span>
-                <strong>{formatCurrency((Number(room.priceValue) || 0) * (Number(room.quantity) || 0))}</strong>
+                <span>{room.name || "Room"} x{room.quantity || 0} · {nights} night{nights > 1 ? "s" : ""}</span>
+                <strong>{formatCurrency((Number(room.priceValue) || 0) * (Number(room.quantity) || 0) * nights)}</strong>
               </div>
             ))}
             <div className="booking-summary-row">
@@ -275,6 +284,10 @@ function Booking() {
             <div className="booking-summary-row">
               <span>Total Guests</span>
               <strong>{computedTotalGuests}</strong>
+            </div>
+            <div className="booking-summary-row">
+              <span>Nights</span>
+              <strong>{nights}</strong>
             </div>
             <div className="booking-summary-total">
               <span>Total price</span>

@@ -9,8 +9,6 @@ function Payment() {
   const location = useLocation();
   const bookingData = location.state?.bookingData;
 
-  const [method, setMethod] = useState(null); // "card" | "upi" | "netbanking"
-  const [card, setCard] = useState({ number: "", name: "", expiry: "", cvv: "" });
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
 
@@ -26,35 +24,79 @@ function Payment() {
     );
   }
 
- const handleCardChange = (e) => {
-  const { name, value } = e.target;
+  // Piece 3: sends Razorpay's response to our backend to be verified,
+  // and only creates the booking once verification succeeds.
+  const verifyAndBook = async (razorpayResponse, token) => {
+    try {
+      const verifyRes = await fetch("http://localhost:5000/api/payment/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          razorpay_order_id: razorpayResponse.razorpay_order_id,
+          razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+          razorpay_signature: razorpayResponse.razorpay_signature,
+          bookingData,
+        }),
+      });
 
-  if (name === "number") {
-    const digitsOnly = value.replace(/\D/g, "").slice(0, 16);
-    const formatted = digitsOnly.replace(/(.{4})/g, "$1 ").trim();
-    setCard((prev) => ({ ...prev, number: formatted }));
-    return;
-  }
+      const data = await verifyRes.json();
 
-  if (name === "expiry") {
-    const digitsOnly = value.replace(/\D/g, "").slice(0, 4);
-    const formatted = digitsOnly.length > 2
-      ? `${digitsOnly.slice(0, 2)}/${digitsOnly.slice(2)}`
-      : digitsOnly;
-    setCard((prev) => ({ ...prev, expiry: formatted }));
-    return;
-  }
+      if (!verifyRes.ok) {
+        setError(data.error || "Payment verification failed.");
+        setProcessing(false);
+        return;
+      }
 
-  if (name === "cvv") {
-    const digitsOnly = value.replace(/\D/g, "").slice(0, 3);
-    setCard((prev) => ({ ...prev, cvv: digitsOnly }));
-    return;
-  }
+      navigate("/booking-confirmation", {
+        state: {
+          booking: data.booking,
+          hotel: bookingData.hotel,
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      setError("Server error during verification. Please try again.");
+      setProcessing(false);
+    }
+  };
 
-  setCard((prev) => ({ ...prev, [name]: value }));
-};
-  const handlePayNow = async (e) => {
-    e.preventDefault();
+  // Piece 2: opens Razorpay's real checkout popup using the order we created.
+  const openRazorpayCheckout = (order, token) => {
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: order.amount,
+      currency: order.currency,
+      name: "Grandeur Hotels",
+      description: `Booking at ${bookingData.hotel?.name}`,
+      order_id: order.id,
+      handler: function (response) {
+        verifyAndBook(response, token);
+      },
+      prefill: {
+        name: `${bookingData.guestDetails?.firstName || ""} ${bookingData.guestDetails?.lastName || ""}`.trim(),
+        email: bookingData.guestDetails?.email,
+        contact: bookingData.guestDetails?.phone,
+      },
+      theme: {
+        color: "#a5490f",
+      },
+      modal: {
+        ondismiss: function () {
+          setProcessing(false);
+          setError("Payment cancelled.");
+        },
+      },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  };
+
+  // Piece 1: kicks off the whole flow when the user clicks "Pay Now".
+  const handlePayNow = async () => {
     setError("");
     setProcessing(true);
 
@@ -66,29 +108,24 @@ function Payment() {
         return;
       }
 
-      const response = await fetch("http://localhost:5000/api/bookings", {
+      const orderRes = await fetch("http://localhost:5000/api/payment/create-order", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(bookingData),
+        body: JSON.stringify({ amount: bookingData.totalPrice }),
       });
 
-      const data = await response.json().catch(() => ({}));
+      const order = await orderRes.json();
 
-      if (!response.ok) {
-        setError(data.error || "Booking failed. Please try again.");
+      if (!orderRes.ok) {
+        setError(order.error || "Failed to start payment. Please try again.");
         setProcessing(false);
         return;
       }
 
-      navigate("/booking-confirmation", {
-        state: {
-          booking: data.booking,
-          hotel: bookingData.hotel,
-        },
-      });
+      openRazorpayCheckout(order, token);
     } catch (err) {
       console.error(err);
       setError("Server error. Please try again.");
@@ -103,100 +140,23 @@ function Payment() {
           <p className="payment-overline">Payment</p>
           <h1 className="payment-title">Complete your booking</h1>
 
-          {!method ? (
-            <div className="payment-methods">
-              <p className="payment-methods-label">Select a payment method</p>
-              <button className="payment-method-option" onClick={() => setMethod("card")}>
-                <span>💳 Credit / Debit Card</span>
-                <span className="payment-method-arrow">›</span>
-              </button>
-              <button className="payment-method-option" onClick={() => setMethod("upi")}>
-                <span>📱 UPI</span>
-                <span className="payment-method-arrow">›</span>
-              </button>
-              <button className="payment-method-option" onClick={() => setMethod("netbanking")}>
-                <span>🏦 Net Banking</span>
-                <span className="payment-method-arrow">›</span>
-              </button>
-            </div>
-          ) : method === "card" ? (
-            <form onSubmit={handlePayNow} className="payment-form">
-              <button type="button" className="payment-change-method" onClick={() => setMethod(null)}>
-                ← Change payment method
-              </button>
+          <div className="payment-form">
+            <p className="payment-placeholder-note">
+              You'll be securely redirected to Razorpay's checkout to complete payment
+              via card, UPI, netbanking, or wallet.
+            </p>
 
-              <label className="payment-field">
-                <span>Card Number</span>
-                <input
-                  type="text"
-                  name="number"
-                  value={card.number}
-                  onChange={handleCardChange}
-                  placeholder="1234 5678 9012 3456"
-                  maxLength={19}
-                  required
-                />
-              </label>
+            {error && <p className="payment-error">{error}</p>}
 
-              <label className="payment-field">
-                <span>Cardholder Name</span>
-                <input
-                  type="text"
-                  name="name"
-                  value={card.name}
-                  onChange={handleCardChange}
-                  placeholder="Name on card"
-                  required
-                />
-              </label>
-
-              <div className="payment-form-row">
-                <label className="payment-field">
-                  <span>Expiry</span>
-                  <input
-                    type="text"
-                    name="expiry"
-                    value={card.expiry}
-                    onChange={handleCardChange}
-                    placeholder="MM/YY"
-                    maxLength={5}
-                    required
-                  />
-                </label>
-                <label className="payment-field">
-                  <span>CVV</span>
-                  <input
-                    type="password"
-                    name="cvv"
-                    value={card.cvv}
-                    onChange={handleCardChange}
-                    placeholder="•••"
-                    maxLength={3}
-                    required
-                  />
-                </label>
-              </div>
-
-              {error && <p className="payment-error">{error}</p>}
-
-              <button type="submit" className="payment-btn" disabled={processing}>
-                {processing ? "Processing..." : `Pay ${formatCurrency(bookingData.totalPrice)}`}
-              </button>
-            </form>
-          ) : (
-            <div className="payment-form">
-              <button type="button" className="payment-change-method" onClick={() => setMethod(null)}>
-                ← Change payment method
-              </button>
-              <p className="payment-placeholder-note">
-                {method === "upi" ? "UPI" : "Net Banking"} payment isn't available in this demo yet — try Card instead.
-              </p>
-              {error && <p className="payment-error">{error}</p>}
-              <button className="payment-btn" onClick={handlePayNow} disabled={processing}>
-                {processing ? "Processing..." : `Pay ${formatCurrency(bookingData.totalPrice)}`}
-              </button>
-            </div>
-          )}
+            <button
+              type="button"
+              className="payment-btn"
+              onClick={handlePayNow}
+              disabled={processing}
+            >
+              {processing ? "Processing..." : `Pay ${formatCurrency(bookingData.totalPrice)}`}
+            </button>
+          </div>
         </section>
 
         <aside className="payment-summary-card">
