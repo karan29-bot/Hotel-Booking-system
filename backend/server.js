@@ -810,6 +810,48 @@ app.post("/api/payment/verify", verifyToken, async (req, res) => {
     res.status(500).json({ error: "Failed to verify payment or create booking" });
   }
 });
+app.post("/api/chat", async (req, res) => {
+  const { message } = req.body;
+
+  if (typeof message !== "string" || message.trim().length === 0) {
+    return res.status(400).json({ error: "Message is required" });
+  }
+
+  try {
+    const ollamaBaseUrl = (process.env.OLLAMA_BASE_URL || "http://127.0.0.1:11434").replace(/\/$/, "");
+    const headers = {
+      "Content-Type": "application/json",
+    };
+
+    if (process.env.OLLAMA_API_KEY) {
+      headers.Authorization = `Bearer ${process.env.OLLAMA_API_KEY}`;
+    }
+
+    const response = await fetch(`${ollamaBaseUrl}/api/generate`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        model: process.env.OLLAMA_MODEL,
+        prompt: message,
+        stream: false,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Ollama error:", data);
+      return res.status(response.status >= 500 ? 502 : response.status).json({
+        error: data.error || "Failed to get a response",
+      });
+    }
+
+    res.json({ reply: data.response });
+  } catch (err) {
+    console.error("Chat error:", err.message);
+    res.status(500).json({ error: "Failed to get a response" });
+  }
+});
 
 app.listen(5000, () => {
 

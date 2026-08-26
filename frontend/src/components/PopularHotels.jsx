@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState , useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import HotelCard from "./HotelCard";
 import "./PopularHotels.css";
@@ -33,6 +33,11 @@ function PopularHotels({
       destination.hotels.some((hotel) => hotel.id === highlightedHotelId)
   );
   const showAllDestinations = isExpanded || highlightedIndex > 2;
+  useEffect(() => {
+  if (highlightedIndex > 2) {
+    setIsExpanded(true);
+  }
+}, [highlightedIndex]);
 
   const scrollSlider = (city, direction) => {
     const container = sliderRefs.current[city];

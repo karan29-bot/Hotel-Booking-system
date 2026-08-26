@@ -40,8 +40,16 @@ function Booking() {
   tomorrowDate.setDate(tomorrowDate.getDate() + 1);
   const tomorrow = tomorrowDate.toISOString().split("T")[0];
 
-  const [checkIn, setCheckIn] = useState(today);
-  const [checkOut, setCheckOut] = useState(tomorrow);
+const storedCheckIn = typeof window !== "undefined" ? sessionStorage.getItem("searchCheckIn") : null;
+const storedCheckOut = typeof window !== "undefined" ? sessionStorage.getItem("searchCheckOut") : null;
+const storedGuests = typeof window !== "undefined" ? sessionStorage.getItem("searchGuests") : null;
+
+const [checkIn, setCheckIn] = useState(
+  storedCheckIn && storedCheckIn >= today ? storedCheckIn : today
+);
+const [checkOut, setCheckOut] = useState(
+  storedCheckOut && storedCheckOut > (storedCheckIn || today) ? storedCheckOut : tomorrow
+);
   const [message, setMessage] = useState("");
 
   // Nights is derived live from checkIn/checkOut, minimum 1 night.
@@ -285,6 +293,12 @@ function Booking() {
               <span>Total Guests</span>
               <strong>{computedTotalGuests}</strong>
             </div>
+            {storedGuests && (
+  <div className="booking-summary-row">
+    <span>Guests Requested</span>
+    <strong>{storedGuests}</strong>
+  </div>
+)}
             <div className="booking-summary-row">
               <span>Nights</span>
               <strong>{nights}</strong>

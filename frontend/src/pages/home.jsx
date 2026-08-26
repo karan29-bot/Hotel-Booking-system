@@ -62,6 +62,17 @@ function Home() {
 
   fetchHomeData();
 }, []);
+useEffect(() => {
+  if (checkIn) sessionStorage.setItem("searchCheckIn", checkIn);
+}, [checkIn]);
+
+useEffect(() => {
+  if (checkOut) sessionStorage.setItem("searchCheckOut", checkOut);
+}, [checkOut]);
+
+useEffect(() => {
+  sessionStorage.setItem("searchGuests", String(guests));
+}, [guests]);
 
   const today = new Date().toISOString().split("T")[0];
 
