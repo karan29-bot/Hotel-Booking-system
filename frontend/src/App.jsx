@@ -1,4 +1,3 @@
-
 import { Routes, Route } from "react-router-dom";
 
 import Home from "./pages/Home";
@@ -16,9 +15,10 @@ import AdminFeedback from "./pages/AdminFeedback";
 import AdminSchedule from "./pages/AdminSchedule";
 import Payment from "./pages/Payment";
 import BookingConfirmation from "./pages/BookingConfirmation";
-
+import ChatWidget from "./components/ChatWidget";
 function App() {
   return (
+    <>
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
@@ -35,9 +35,11 @@ function App() {
         <Route path="customers" element={<AdminCustomers />} />
         <Route path="feedback" element={<AdminFeedback />} />
         <Route path="schedule" element={<AdminSchedule />} />
-        
       </Route>
     </Routes>
+
+    <ChatWidget />
+    </>
   );
 }
 

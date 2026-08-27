@@ -811,28 +811,19 @@ app.post("/api/payment/verify", verifyToken, async (req, res) => {
   }
 });
 app.post("/api/chat", async (req, res) => {
-  const { message } = req.body;
-
-  if (typeof message !== "string" || message.trim().length === 0) {
-    return res.status(400).json({ error: "Message is required" });
-  }
+  const { messages } = req.body; // now expects an array, not a single message
 
   try {
-    const ollamaBaseUrl = (process.env.OLLAMA_BASE_URL || "http://127.0.0.1:11434").replace(/\/$/, "");
-    const headers = {
-      "Content-Type": "application/json",
-    };
-
-    if (process.env.OLLAMA_API_KEY) {
-      headers.Authorization = `Bearer ${process.env.OLLAMA_API_KEY}`;
-    }
-
-    const response = await fetch(`${ollamaBaseUrl}/api/generate`, {
+    // Ollama's /api/chat endpoint (different from /api/generate) is built for multi-turn conversations
+    const response = await fetch("https://ollama.com/api/chat", {
       method: "POST",
-      headers,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.OLLAMA_API_KEY}`,
+      },
       body: JSON.stringify({
         model: process.env.OLLAMA_MODEL,
-        prompt: message,
+        messages: messages,
         stream: false,
       }),
     });
@@ -840,13 +831,11 @@ app.post("/api/chat", async (req, res) => {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Ollama error:", data);
-      return res.status(response.status >= 500 ? 502 : response.status).json({
-        error: data.error || "Failed to get a response",
-      });
+      console.error("Ollama Cloud error:", data);
+      return res.status(500).json({ error: "Failed to get a response" });
     }
 
-    res.json({ reply: data.response });
+    res.json({ reply: data.message.content });
   } catch (err) {
     console.error("Chat error:", err.message);
     res.status(500).json({ error: "Failed to get a response" });
