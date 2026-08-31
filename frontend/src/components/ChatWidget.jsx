@@ -93,9 +93,11 @@ function ChatWidget() {
         </div>
       )}
 
-      <button className="chat-toggle-btn" onClick={() => setIsOpen((prev) => !prev)}>
-        {isOpen ? "✕" : "💬"}
-      </button>
+      {!isOpen && (
+        <button className="chat-toggle-btn" onClick={() => setIsOpen(true)} aria-label="Open chat">
+          💬
+        </button>
+      )}
     </div>
   );
 }

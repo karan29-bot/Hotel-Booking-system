@@ -811,10 +811,10 @@ app.post("/api/payment/verify", verifyToken, async (req, res) => {
   }
 });
 app.post("/api/chat", async (req, res) => {
-  const { messages } = req.body; // now expects an array, not a single message
+  const { messages } = req.body;
 
   try {
-    // Ollama's /api/chat endpoint (different from /api/generate) is built for multi-turn conversations
+    // First call: give the AI the conversation + the tools it can use
     const response = await fetch("https://ollama.com/api/chat", {
       method: "POST",
       headers: {
@@ -823,7 +823,8 @@ app.post("/api/chat", async (req, res) => {
       },
       body: JSON.stringify({
         model: process.env.OLLAMA_MODEL,
-        messages: messages,
+        messages,
+        tools,
         stream: false,
       }),
     });
@@ -835,12 +836,87 @@ app.post("/api/chat", async (req, res) => {
       return res.status(500).json({ error: "Failed to get a response" });
     }
 
-    res.json({ reply: data.message.content });
+    const aiMessage = data.message;
+
+    // Did the AI decide it wants to call a tool?
+    if (aiMessage.tool_calls && aiMessage.tool_calls.length > 0) {
+      const toolCall = aiMessage.tool_calls[0];
+      const args = toolCall.function.arguments;
+
+      let toolResult;
+      if (toolCall.function.name === "searchHotels") {
+        toolResult = await searchHotels(args);
+      }
+
+      // Build a new messages array: original history + AI's tool request + our tool's result
+      const followUpMessages = [
+        ...messages,
+        aiMessage,
+        {
+          role: "tool",
+          content: JSON.stringify(toolResult),
+        },
+      ];
+
+      // Second call: now the AI writes a real answer using the actual data
+      const followUpResponse = await fetch("https://ollama.com/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.OLLAMA_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: process.env.OLLAMA_MODEL,
+          messages: followUpMessages,
+          stream: false,
+        }),
+      });
+
+      const followUpData = await followUpResponse.json();
+      return res.json({ reply: followUpData.message.content });
+    }
+
+    // No tool needed — the AI just answered normally
+    res.json({ reply: aiMessage.content });
   } catch (err) {
     console.error("Chat error:", err.message);
     res.status(500).json({ error: "Failed to get a response" });
   }
 });
+const tools = [
+  {
+    type: "function",
+    function: {
+      name: "searchHotels",
+      description: "Search for hotels by city, and optionally filter by max price per night or minimum rating.",
+      parameters: {
+        type: "object",
+        properties: {
+          city: { type: "string", description: "The city to search in, e.g. Goa, Mumbai, Bangalore" },
+          maxPrice: { type: "number", description: "Maximum price per night in INR" },
+          minRating: { type: "number", description: "Minimum star rating, 1-5" },
+        },
+        required: ["city"],
+      },
+    },
+  },
+];
+async function searchHotels({ city, maxPrice, minRating }) {
+  let query = "SELECT id, name, city, rating, price_per_night FROM hotels WHERE LOWER(city) = LOWER($1)";
+  const params = [city];
+
+  if (maxPrice) {
+    params.push(maxPrice);
+    query += ` AND price_per_night <= $${params.length}`;
+  }
+  if (minRating) {
+    params.push(minRating);
+    query += ` AND rating >= $${params.length}`;
+  }
+
+  const result = await pool.query(query, params);
+  return result.rows;
+}
 
 app.listen(5000, () => {
 
